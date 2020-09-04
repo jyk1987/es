@@ -3,6 +3,7 @@ package es
 import (
 	"errors"
 	"reflect"
+	"strconv"
 	"sync"
 )
 
@@ -46,7 +47,7 @@ func _NewService(instRef interface{}) *Service {
 	// TODO: 包路径的不确定性处理
 	s.Path = instType.String()[1:] //设置实例的包路径
 	s.Instance = instValue         //设置实例引用
-	eslog.Infoln("Path:", s.Path)
+	eslog.Info("注册服务:", s.Path)
 	methodCount := instType.NumMethod() //获取方法总数
 	methods := make(map[string]*Method, methodCount)
 	for i := 0; i < methodCount; i++ {
@@ -54,13 +55,14 @@ func _NewService(instRef interface{}) *Service {
 		m.MethodName = instType.Method(i).Name                  //方法名称
 		m.MethodInstance = instValue.MethodByName(m.MethodName) //方法实例
 		m.MethodType = m.MethodInstance.Type()                  //方法类型
-		eslog.Debug("Method", i, ":", m.MethodName)
+		eslog.Info("注册方法", i, ":", m.MethodName)
 		//初始化方法的所有参数数据
 		paramCount := m.MethodType.NumIn() //获取参数个数
 		m.ParamCount = paramCount          //设置参数个数
 		paramsType := make([]reflect.Type, paramCount)
 		for j := 0; j < paramCount; j++ {
 			paramsType[j] = m.MethodType.In(j) //获取参数的Type
+			eslog.Info("参数", j, m.MethodType.In(j))
 		}
 		m.ParamsType = paramsType
 		//初始化方法的所有返回数据
@@ -83,7 +85,7 @@ func RegService(serviceInstance interface{}) {
 	_ServicesLock.Lock()
 	_Services[service.Path] = service
 	_ServicesLock.Unlock()
-	eslog.Infoln(service.Path)
+	eslog.Info("注册完毕:", service.Path)
 }
 
 func CallService(path, methodName string, params ...interface{}) ([]reflect.Value, error) {
@@ -93,20 +95,28 @@ func CallService(path, methodName string, params ...interface{}) ([]reflect.Valu
 	_ServicesLock.RUnlock()
 	//未找到服务
 	if !ok {
-		return nil, errors.New("没有找到服务:" + path)
+		msg := "没有找到服务:" + path
+		eslog.Error(msg)
+		return nil, errors.New(msg)
 	}
 	//服务不包含方法
 	if s.Methods == nil {
-		return nil, errors.New(path + "服务的方法为初始化.")
+		msg := "服务" + path + "的方法为初始化"
+		eslog.Error(msg)
+		return nil, errors.New(msg)
 	}
 	//获取需要调用的方法
 	m, ok := s.Methods[methodName]
 	if !ok {
-		return nil, errors.New("调用的方法为找到:" + path + "." + methodName)
+		msg := "服务" + path + "中没有找到" + methodName + "方法"
+		eslog.Error(msg)
+		return nil, errors.New(msg)
 	}
 	if m.ParamCount != len(params) {
-		eslog.Error("调用参数不匹配")
-		return nil, errors.New("调用参数不匹配")
+		msg := "参数不匹配:" + path + "." + methodName + "参数为" + strconv.Itoa(m.ParamCount) +
+			"个,传入参数为" + strconv.Itoa(len(params)) + "个"
+		eslog.Error(msg)
+		return nil, errors.New(msg)
 	}
 	in := make([]reflect.Value, m.ParamCount) //创建参数集
 	for i := 0; i < m.ParamCount; i++ {
