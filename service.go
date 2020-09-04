@@ -115,13 +115,6 @@ func CallService(path, methodName string, params ...interface{}) ([]reflect.Valu
 		in[i] = param.Convert(paramType)    //转换参数为目标类型,增加兼容性
 	}
 	result := m.MethodInstance.Call(in)
-	defer func() {
-		err := recover() //recover内置函数可以捕获到异常
-		if err != nil {  //nil是err的零值
-			eslog.Infoln("err=", err)
-			//这里可以把信息发送给管理员
-			eslog.Infoln("发送信息给管理员admin@steven.com")
-		}
-	}()
+
 	return result, nil
 }
