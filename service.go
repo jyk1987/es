@@ -160,17 +160,12 @@ func Spread(serviceName string, path string, methodName string, params ...interf
 		if e != nil {
 			return e
 		}
-		if cbf != nil {
-			for i := 0; i < len(result); i++ {
-				outType := cbfType.In(i)
-				if e != nil {
-					outParams[i] = reflect.ValueOf(outType)
-				} else {
-					outParams[i] = result[i]
-				}
-			}
-			cbfValue := reflect.ValueOf(cbf)
-			executeResult := cbfValue.Call(outParams)
+		if len(result) > 1 && !result[1].IsNil() {
+			return result[1].Interface().(error)
+		}
+		if cbf != nil && len(result) > 0 {
+			outParams[0] = result[0]
+			executeResult := reflect.ValueOf(cbf).Call(outParams)
 			eslog.Debug(executeResult)
 		}
 		return nil
