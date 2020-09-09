@@ -133,5 +133,55 @@ func CallService(path, methodName string, params ...interface{}) ([]reflect.Valu
 		}
 	}()
 	result := m.MethodInstance.Call(in)
+	eslog.Debug("方法执行成功：", path, methodName, params)
+	eslog.Debug("结果:")
+	for _, r := range result {
+		eslog.Debug(r.String())
+	}
 	return result, nil, true
+}
+
+func Spread(serviceName string, path string, methodName string, params ...interface{}) error {
+	if len(params) > 0 {
+		cbf := params[len(params)-1]
+		cbfType := reflect.TypeOf(cbf)
+		//reflect.Method{cbf}
+		//最后一个参数是func
+		if cbfType.Kind().String() == "func" {
+			params = params[0 : len(params)-1]
+		} else {
+			cbf = nil
+		}
+		outParams := make([]reflect.Value, cbfType.NumIn())
+		result, e, ok := CallService(path, methodName, params...)
+		if !ok {
+			return errors.New("远程服务执行失败")
+		}
+		if e != nil {
+			return e
+		}
+		if cbf != nil {
+			for i := 0; i < len(result); i++ {
+				outType := cbfType.In(i)
+				if e != nil {
+					outParams[i] = reflect.ValueOf(outType)
+				} else {
+					outParams[i] = result[i]
+				}
+			}
+			cbfValue := reflect.ValueOf(cbf)
+			executeResult := cbfValue.Call(outParams)
+			eslog.Debug(executeResult)
+		}
+		return nil
+	}
+	_, e, ok := CallService(path, methodName, params...)
+	if !ok {
+		return errors.New("远程服务执行失败")
+	}
+	if e != nil {
+		return e
+	}
+	return nil
+
 }
