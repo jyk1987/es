@@ -2,7 +2,6 @@ package data
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 )
 
@@ -17,7 +16,7 @@ type Request struct {
 // Result 服务执行结果
 type Result struct {
 	//Error error //执行出错内容，此错误不是远程方法返回的错误，而是服务调用过程出错，或者远程方法执行报错（非正常执行错误）
-	Returns []reflect.Value // 方法返回的数据
+	Returns []interface{} // 方法返回的数据
 }
 
 func (r *Result) GetResult(funcInstance interface{}) error {
@@ -35,20 +34,21 @@ func (r *Result) GetResult(funcInstance interface{}) error {
 	in := make([]reflect.Value, returnLen)
 	for i := 0; i < ft.NumIn(); i++ {
 		value := r.Returns[i]
+		typeValue := reflect.ValueOf(value)
 		inType := ft.In(i)
-		valueType := value.Type()
-		if inType.Kind() != valueType.Kind() {
-			return errors.New(fmt.Sprintf(
-				"第%v个参数类型不相符，返回数据类型%v，方法参数类型%v",
-				i, valueType.Kind(), inType.Kind(),
-			))
-		}
+		// valueType := value.Type()
+		// if inType.Kind() != valueType.Kind() {
+		// 	return errors.New(fmt.Sprintf(
+		// 		"第%v个参数类型不相符，返回数据类型%v，方法参数类型%v",
+		// 		i, valueType.Kind(), inType.Kind(),
+		// 	))
+		// }
 		switch inType.Kind() {
 		// TODO:不同类型的转换
 		case reflect.Struct:
-			in[i] = value.Convert(inType)
+			in[i] = typeValue.Convert(inType)
 		default:
-			in[i] = value.Convert(inType)
+			in[i] = typeValue.Convert(inType)
 		}
 
 	}

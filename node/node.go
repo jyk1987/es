@@ -65,7 +65,13 @@ func (m *Method) Execute(args []interface{}) (*data.Result, error) {
 		inputArgs[i] = reflect.ValueOf(args[i])
 	}
 	outs := m.MethodInstance.Call(inputArgs)
-	return &data.Result{Returns: outs}, nil
+	// 转换数据为interface类型，TODO：是否可以转换成[]byte数据?
+	outlen := len(outs)
+	outDatas := make([]interface{}, outlen)
+	for i := 0; i < outlen; i++ {
+		outDatas[i] = outs[i].Interface()
+	}
+	return &data.Result{Returns: outDatas}, nil
 }
 
 // _NewService 创建一个服务

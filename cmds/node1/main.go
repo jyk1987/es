@@ -12,7 +12,7 @@ type ServerDemo struct {
 
 func (*ServerDemo) Service1(a, b string) (string, error) {
 	println("input args:", a, b)
-	return "", errors.New("出错了")
+	return a + b, errors.New("test error")
 }
 
 func init() {
