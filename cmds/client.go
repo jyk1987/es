@@ -27,10 +27,14 @@ func main() {
 	// 声明与服务方法相同的返回参数用于接受返回参数
 	var r string
 	var e error
-	result.GetResult(func(result string, err error) {
+	re := result.GetResult(func(result string, err error) {
 		r = result
 		e = err
 	})
+	if re != nil {
+		println(re.Error())
+		return
+	}
 	// 方法执行完成后续操作
 	if e != nil {
 		println(e.Error())

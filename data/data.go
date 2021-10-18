@@ -2,6 +2,7 @@ package data
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 )
 
@@ -20,11 +21,37 @@ type Result struct {
 }
 
 func (r *Result) GetResult(funcInstance interface{}) error {
-
-	fo := reflect.ValueOf(funcInstance)
-	if fo.Kind() != reflect.Func {
-		return errors.New("参数必须为方法！")
+	ft := reflect.TypeOf(funcInstance)
+	if ft.Kind() != reflect.Func {
+		return errors.New("必须传入一个方法")
 	}
-	fo.Call(r.Returns)
+
+	returnLen := len(r.Returns)
+	funcInLen := ft.NumIn()
+	if returnLen != funcInLen {
+		return errors.New("方法参数个数不同")
+	}
+	fo := reflect.ValueOf(funcInstance)
+	in := make([]reflect.Value, returnLen)
+	for i := 0; i < ft.NumIn(); i++ {
+		value := r.Returns[i]
+		inType := ft.In(i)
+		valueType := value.Type()
+		if inType.Kind() != valueType.Kind() {
+			return errors.New(fmt.Sprintf(
+				"第%v个参数类型不相符，返回数据类型%v，方法参数类型%v",
+				i, valueType.Kind(), inType.Kind(),
+			))
+		}
+		switch inType.Kind() {
+		// TODO:不同类型的转换
+		case reflect.Struct:
+			in[i] = value.Convert(inType)
+		default:
+			in[i] = value.Convert(inType)
+		}
+
+	}
+	fo.Call(in)
 	return nil
 }
