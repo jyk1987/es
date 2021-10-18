@@ -5,10 +5,10 @@ import (
 	"os"
 )
 
-var eslog *logrus.Logger
+var log *logrus.Logger
 
 func init() {
-	eslog = logrus.New()
-	eslog.SetLevel(logrus.DebugLevel)
-	eslog.Out = os.Stdout
+	log = logrus.New()
+	log.SetLevel(logrus.DebugLevel)
+	log.Out = os.Stdout
 }
