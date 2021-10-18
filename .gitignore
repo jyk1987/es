@@ -1,4 +1,4 @@
 /.vscode/
 /.idea/
-go.sum
 /client
+client.exe

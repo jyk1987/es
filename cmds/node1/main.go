@@ -2,7 +2,9 @@ package main
 
 import (
 	"errors"
+
 	"gitee.com/jyk1987/es"
+	"gitee.com/jyk1987/es/node"
 )
 
 type ServerDemo struct {
@@ -40,4 +42,7 @@ func main() {
 		println(e.Error())
 	}
 	println(r)
+	println("服务测试完成")
+	println("开启启动node...")
+	node.InitNodeServer()
 }

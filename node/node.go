@@ -1,12 +1,16 @@
-package server
+package node
 
 import (
-	"errors"
+	"flag"
 	"fmt"
-	"gitee.com/jyk1987/es/data"
-	"gitee.com/jyk1987/es/log"
 	"reflect"
 	"sync"
+
+	"gitee.com/jyk1987/es/data"
+	"gitee.com/jyk1987/es/log"
+	"github.com/smallnest/rpcx/server"
+
+	"context"
 )
 
 // _Services 存放所有的服务
@@ -118,21 +122,43 @@ func Reg(serviceInstance interface{}) {
 }
 
 // ExecuteService 执行（本地）服务
-func ExecuteService(request data.Request) (*data.Result, error) {
+func ExecuteService(request *data.Request) (*data.Result, error) {
 	// 获取服务
 	_ServicesLock.RLock()
 	s, ok := _Services[request.Path]
 	_ServicesLock.RUnlock()
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("服务没有找到,path:%v", request.Path))
+		return nil, fmt.Errorf("服务没有找到,path:%v", request.Path)
 	}
 	// 获取方法
 	s.MethodSetLock.RLock()
 	m := s.GetMethod(request.Method)
 	s.MethodSetLock.RUnlock()
 	if m == nil {
-		return nil, errors.New(fmt.Sprintf("方法没有找到,path:%v,method:%v", request.Path, request.Method))
+		return nil, fmt.Errorf("方法没有找到,path:%v,method:%v", request.Path, request.Method)
 	}
 	// 执行方法
 	return m.Execute(request.Args)
+}
+
+// RpcServer rpcx暴露的服务
+type ESNode struct{}
+
+// Execute 执行服务
+func (*ESNode) Execute(ctx context.Context, request *data.Request, result *data.Result) error {
+	r, err := ExecuteService(request)
+	if err != nil {
+		return err
+	}
+	result.Returns = r.Returns
+	return nil
+}
+
+// InitRpcServer 初始化rpc服务端
+func InitNodeServer() {
+	addr := flag.String("addr", "0.0.0.0:3456", "server address")
+	flag.Parse()
+	s := server.NewServer()
+	s.Register(new(ESNode), "")
+	s.Serve("tcp", *addr)
 }

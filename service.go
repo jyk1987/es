@@ -2,17 +2,23 @@ package es
 
 import (
 	"gitee.com/jyk1987/es/data"
-	server "gitee.com/jyk1987/es/server"
+	"gitee.com/jyk1987/es/node"
 )
 
 // Reg 注册本地服务
 func Reg(serviceInstance interface{}) {
-	server.Reg(serviceInstance)
+	node.Reg(serviceInstance)
 }
 
-func Call(node, path, method string, params ...interface{}) (*data.Result, error) {
-	request := data.Request{Node: node, Path: path, Method: method, Args: params}
-	return server.ExecuteService(request)
+func Call(nodeName, path, method string, params ...interface{}) (*data.Result, error) {
+	return node.ExecuteService(
+		&data.Request{
+			NodeName: nodeName,
+			Path:     path,
+			Method:   method,
+			Args:     params,
+		},
+	)
 }
 
 //func Call(path, methodName string, params ...interface{}) ([]reflect.Value, error, bool) {

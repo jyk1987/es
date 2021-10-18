@@ -8,10 +8,10 @@ import (
 
 // Request 调用服务的时候发出去的数据
 type Request struct {
-	Node   string        // 节点名称
-	Path   string        //服务包路径
-	Method string        //服务名
-	Args   []interface{} //调用参数
+	NodeName string        // 节点名称
+	Path     string        //服务包路径
+	Method   string        //服务名
+	Args     []interface{} //调用参数
 }
 
 // Result 服务执行结果
