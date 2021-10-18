@@ -1,5 +1,40 @@
 package main
 
-func main() {
+import (
+	"context"
+	"flag"
+	"fmt"
 
+	"gitee.com/jyk1987/es/data"
+	"github.com/smallnest/rpcx/client"
+)
+
+func main() {
+	addr := flag.String("addr", "localhost:3456", "server address")
+	flag.Parse()
+	d, err := client.NewPeer2PeerDiscovery("tcp@"+*addr, "")
+	if err != nil {
+		println(err.Error())
+		return
+	}
+	xclient := client.NewXClient("ESNode", client.Failtry, client.RandomSelect, d, client.DefaultOption)
+	defer xclient.Close()
+	args := make([]interface{}, 2)
+	args[0] = "你好"
+	args[1] = "再见"
+	reqs := &data.Request{
+		NodeName: "",
+		Path:     "main.ServerDemo",
+		Method:   "Service1",
+		Args:     args,
+	}
+	result := new(data.Result)
+	println("开始调用")
+	err = xclient.Call(context.Background(), "Execute", reqs, result)
+	println("完成调用")
+	if err != nil {
+		fmt.Printf("failed to call: %v", err)
+	}
+
+	fmt.Println(result.Returns)
 }
