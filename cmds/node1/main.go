@@ -12,18 +12,20 @@ type ServerDemo struct {
 	Value *ServerDemo
 }
 
-func (*ServerDemo) Service1(a, b string) (string, *ServerDemo, error) {
+func (*ServerDemo) Service1(a, b string, c []byte) (string, *ServerDemo, []int, error) {
 	sd := &ServerDemo{Name: "张三", Value: &ServerDemo{Name: "张小三"}}
+	fmt.Println(c)
 	println("input args:", a, b)
-	return a + b, sd, errors.New("sdasdasd")
+	return a + b, sd, []int{1, 2, 3}, errors.New("sdasdasd")
 }
 
 func init() {
 	es.Reg(new(ServerDemo))
 }
 func main() {
+	c := []byte("sfasf")
 	// 调用服务
-	result, err := es.Call("", "main.ServerDemo", "Service1", "你好", "世界")
+	result, err := es.Call("", "main.ServerDemo", "Service1", "你好", "世界", c)
 	// 判断调用过程中是否有出错
 	if err != nil {
 		println("调用服务方法出错", err)

@@ -1,14 +1,14 @@
 package node
 
 import (
+	"errors"
 	"flag"
 	"fmt"
-	"reflect"
-	"sync"
-
 	"gitee.com/jyk1987/es/data"
 	"gitee.com/jyk1987/es/log"
 	"github.com/smallnest/rpcx/server"
+	"reflect"
+	"sync"
 
 	"context"
 )
@@ -58,19 +58,19 @@ type Method struct {
 // TODO：此方法需要进行性能分析，并对性能做出优化
 func (m *Method) Execute(args []interface{}) (*data.Result, error) {
 	inputArgsLen := len(args)
-	inputArgs := make([]reflect.Value, inputArgsLen)
-
+	if inputArgsLen != m.ParamCount {
+		return nil, errors.New("方法参数个数不相符！")
+	}
+	inputArgs := make([]reflect.Value, m.ParamCount)
 	for i := 0; i < inputArgsLen; i++ {
 		// TODO： 检查输入参数是否符合方法声明
-		inputArgs[i] = reflect.ValueOf(args[i])
+		inputArgs[i] = reflect.ValueOf(args[i]).Convert(m.ParamsType[i])
 	}
 	outs := m.MethodInstance.Call(inputArgs)
-	// 转换数据为interface类型，TODO：是否可以转换成[]byte数据?
 	outlen := len(outs)
-	//outDatas := make([]interface{}, outlen)
-	outDatas := make([]data.ESData, outlen)
+	outDatas := make([]*data.ESData, outlen)
 	for i := 0; i < outlen; i++ {
-		outDatas[i] = *data.NewESData(outs[i])
+		outDatas[i] = data.NewESData(outs[i])
 	}
 	return &data.Result{Returns: outDatas}, nil
 }
@@ -148,7 +148,7 @@ func ExecuteService(request *data.Request) (*data.Result, error) {
 	return m.Execute(request.Args)
 }
 
-// RpcServer rpcx暴露的服务
+// ESNode rpcx暴露的服务
 type ESNode struct{}
 
 // Execute 执行服务
@@ -161,9 +161,10 @@ func (*ESNode) Execute(ctx context.Context, request *data.Request, result *data.
 	return nil
 }
 
-// InitRpcServer 初始化rpc服务端
+// InitNodeServer 初始化rpc服务端
 func InitNodeServer() {
 	addr := flag.String("addr", "0.0.0.0:3456", "server address")
+	//share.Codecs[protocol.SerializeType(4)] = &data.GobCodec{}
 	flag.Parse()
 	s := server.NewServer()
 	s.Register(new(ESNode), "")

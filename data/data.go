@@ -9,25 +9,25 @@ import (
 type ESDataType uint
 
 const (
-	ESDataError  ESDataType = 0
+	ESDataNil    ESDataType = 0
 	ESDataString ESDataType = 1
 	ESDataNumber ESDataType = 2
 	ESDataBool   ESDataType = 3
 	ESDataJson   ESDataType = 4
 	ESDataBinary ESDataType = 5
+	ESDataError  ESDataType = 100
 )
 
 type ESData struct {
 	Type   ESDataType // 数据类型
-	Number float64
-	String string
-	Bool   bool
-	Binary []byte
-	IsNil  bool
+	Number float64    //存储数值数据，所有的熟知了行不管整数还是浮点都转成float64存储
+	Bool   bool       //存储bool数据
+	Binary []byte     //其他数据都存储二级制流中
 }
 
 func NewESData(value reflect.Value) *ESData {
 	d := new(ESData)
+	d.Type = ESDataNil
 	data := value.Interface()
 	switch value.Kind() {
 	case reflect.Bool:
@@ -52,14 +52,13 @@ func NewESData(value reflect.Value) *ESData {
 	case reflect.String:
 		d.Type = ESDataString
 		fmt.Println("转换string")
-		d.String = data.(string)
+		d.Binary = []byte(data.(string))
 	case reflect.Interface:
 		fmt.Println("转换interface")
-		d.IsNil = value.IsNil()
-		if !d.IsNil {
+		if !value.IsNil() {
 			if value.Type().Name() == "error" {
 				d.Type = ESDataError
-				d.String = value.MethodByName("Error").Call([]reflect.Value{})[0].String()
+				d.Binary = []byte(value.MethodByName("Error").Call([]reflect.Value{})[0].String())
 			} else {
 				d.Type = ESDataJson
 				var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -73,14 +72,30 @@ func NewESData(value reflect.Value) *ESData {
 		d.Binary, _ = json.Marshal(&data)
 	case reflect.Ptr:
 		fmt.Println("转换ptr")
-		d.IsNil = value.IsNil()
-		if !d.IsNil {
+		if !value.IsNil() {
 			d.Type = ESDataJson
 			var json = jsoniter.ConfigCompatibleWithStandardLibrary
 			d.Binary, _ = json.Marshal(&data)
 		}
+	case reflect.Slice:
+		if !value.IsNil() {
+			if value.Type().String() == "[]uint8" {
+				fmt.Println("转换[]byte")
+				d.Type = ESDataBinary
+				d.Binary = value.Bytes()
+			} else {
+				fmt.Println("转换Slice")
+				d.Type = ESDataJson
+				var json = jsoniter.ConfigCompatibleWithStandardLibrary
+				d.Binary, _ = json.Marshal(&data)
+			}
+		}
+	default:
+		fmt.Println("转换other:", value.Kind())
+		d.Type = ESDataJson
+		var json = jsoniter.ConfigCompatibleWithStandardLibrary
+		d.Binary, _ = json.Marshal(&data)
 	}
-
 	return d
 }
 
@@ -95,11 +110,23 @@ type Request struct {
 // Result 服务执行结果
 type Result struct {
 	//Error error //执行出错内容，此错误不是远程方法返回的错误，而是服务调用过程出错，或者远程方法执行报错（非正常执行错误）
-	Returns []ESData // 方法返回的数据
+	Returns []*ESData // 方法返回的数据
 }
 
-func (r *Result) GetInt32(index ...int) {
+func (r *Result) GetReturnData(index ...int) *ESData {
+	i := 0
+	if len(index) > 0 {
+		i = index[0]
+	}
+	count := len(r.Returns)
+	if i >= count {
+		i = count - 1
+	}
+	return r.Returns[i]
+}
 
+func (r *Result) GetNumber(index ...int) float64 {
+	return r.GetReturnData(index...).Number
 }
 
 //

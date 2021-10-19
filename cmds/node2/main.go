@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-
 	"gitee.com/jyk1987/es/data"
 	"github.com/smallnest/rpcx/client"
 )
@@ -17,27 +16,34 @@ func main() {
 		println(err.Error())
 		return
 	}
-	xclient := client.NewXClient("ESNode", client.Failtry, client.RandomSelect, d, client.DefaultOption)
+	//share.Codecs[protocol.SerializeType(4)] = &data.GobCodec{}
+	option := client.DefaultOption
+	//option.SerializeType = protocol.SerializeType(4)
+	xclient := client.NewXClient("ESNode", client.Failtry, client.RandomSelect, d, option)
+
 	defer xclient.Close()
-	args := make([]interface{}, 2)
+	//c := map[string]string{"saf": "safas"}
+	args := make([]interface{}, 3)
 	args[0] = "你好"
 	args[1] = "再见"
+	args[2] = make([]byte, 0)
 	reqs := &data.Request{
 		NodeName: "",
 		Path:     "main.ServerDemo",
 		Method:   "Service1",
 		Args:     args,
 	}
+
 	result := new(data.Result)
 	println("开始调用")
 	err = xclient.Call(context.Background(), "Execute", reqs, result)
 	println("完成调用")
 	if err != nil {
-		fmt.Printf("failed to call: %v", err)
+		fmt.Println("调用失败:", err)
 	}
 	for i := 0; i < len(result.Returns); i++ {
 		r := result.Returns[i]
-		fmt.Println(r)
+		fmt.Println(string(r.Binary))
 	}
 	//r := ""
 	//e := errors.New("")
