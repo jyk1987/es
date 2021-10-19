@@ -18,10 +18,8 @@ func main() {
 		println(err.Error())
 		return
 	}
-	//share.Codecs[protocol.SerializeType(4)] = &data.GobCodec{}
-	option := client.DefaultOption
-	//option.SerializeType = protocol.SerializeType(4)
-	xclient := client.NewXClient("ESNode", client.Failtry, client.RandomSelect, d, option)
+
+	xclient := client.NewXClient("ESNode", client.Failtry, client.RandomSelect, d, client.DefaultOption)
 
 	defer xclient.Close()
 	//c := map[string]string{"saf": "safas"}

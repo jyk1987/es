@@ -168,7 +168,6 @@ func (*ESNode) Execute(ctx context.Context, request *data.Request, result *data.
 // InitNodeServer 初始化rpc服务端
 func InitNodeServer() {
 	addr := flag.String("addr", "0.0.0.0:3456", "server address")
-	//share.Codecs[protocol.SerializeType(4)] = &data.GobCodec{}
 	flag.Parse()
 	s := server.NewServer()
 	s.Register(new(ESNode), "")
