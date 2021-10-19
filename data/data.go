@@ -1,7 +1,7 @@
 package data
 
 import (
-	"fmt"
+	"gitee.com/jyk1987/es/log"
 	jsoniter "github.com/json-iterator/go"
 	"reflect"
 )
@@ -31,7 +31,7 @@ func NewESData(value reflect.Value) *ESData {
 	data := value.Interface()
 	switch value.Kind() {
 	case reflect.Bool:
-		fmt.Println("转换bool")
+		//fmt.Println("转换bool")
 		d.Type = ESDataBool
 		d.Bool = data.(bool)
 	case reflect.Int:
@@ -46,15 +46,15 @@ func NewESData(value reflect.Value) *ESData {
 	case reflect.Uint64:
 	case reflect.Float32:
 	case reflect.Float64:
-		fmt.Println("转换number")
+		//fmt.Println("转换number")
 		d.Type = ESDataNumber
 		d.Number = data.(float64)
 	case reflect.String:
 		d.Type = ESDataString
-		fmt.Println("转换string")
+		//fmt.Println("转换string")
 		d.Binary = []byte(data.(string))
 	case reflect.Interface:
-		fmt.Println("转换interface")
+		//fmt.Println("转换interface")
 		if !value.IsNil() {
 			if value.Type().Name() == "error" {
 				d.Type = ESDataError
@@ -66,12 +66,12 @@ func NewESData(value reflect.Value) *ESData {
 			}
 		}
 	case reflect.Struct:
-		fmt.Println("转换struct")
+		//fmt.Println("转换struct")
 		d.Type = ESDataJson
 		var json = jsoniter.ConfigCompatibleWithStandardLibrary
 		d.Binary, _ = json.Marshal(&data)
 	case reflect.Ptr:
-		fmt.Println("转换ptr")
+		//fmt.Println("转换ptr")
 		if !value.IsNil() {
 			d.Type = ESDataJson
 			var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -80,18 +80,18 @@ func NewESData(value reflect.Value) *ESData {
 	case reflect.Slice:
 		if !value.IsNil() {
 			if value.Type().String() == "[]uint8" {
-				fmt.Println("转换[]byte")
+				//fmt.Println("转换[]byte")
 				d.Type = ESDataBinary
 				d.Binary = value.Bytes()
 			} else {
-				fmt.Println("转换Slice")
+				//fmt.Println("转换Slice")
 				d.Type = ESDataJson
 				var json = jsoniter.ConfigCompatibleWithStandardLibrary
 				d.Binary, _ = json.Marshal(&data)
 			}
 		}
 	default:
-		fmt.Println("转换other:", value.Kind())
+		//fmt.Println("转换other:", value.Kind())
 		d.Type = ESDataJson
 		var json = jsoniter.ConfigCompatibleWithStandardLibrary
 		d.Binary, _ = json.Marshal(&data)
@@ -101,10 +101,33 @@ func NewESData(value reflect.Value) *ESData {
 
 // Request 调用服务的时候发出去的数据
 type Request struct {
-	NodeName string        // 节点名称
-	Path     string        //服务包路径
-	Method   string        //服务名
-	Args     []interface{} //调用参数
+	NodeName   string   // 节点名称
+	Path       string   //服务包路径
+	Method     string   //服务名
+	Parameters [][]byte //调用参数
+}
+
+func (r *Request) SetParameters(parameter ...interface{}) error {
+	count := len(parameter)
+	r.Parameters = make([][]byte, count)
+	for i := 0; i < count; i++ {
+		b, e := EncodeData(parameter[i])
+		if e != nil {
+			log.Log.Error("参数转换失败！", parameter[i])
+			return e
+		}
+		r.Parameters[i] = b
+	}
+	return nil
+}
+func (r *Request) AddParameter(parameter interface{}) error {
+	b, e := EncodeData(parameter)
+	if e != nil {
+		log.Log.Error("参数转换失败！", parameter)
+		return e
+	}
+	r.Parameters = append(r.Parameters, b)
+	return nil
 }
 
 // Result 服务执行结果

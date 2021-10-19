@@ -11,14 +11,16 @@ func Reg(serviceInstance interface{}) {
 }
 
 func Call(nodeName, path, method string, params ...interface{}) (*data.Result, error) {
-	return node.ExecuteService(
-		&data.Request{
-			NodeName: nodeName,
-			Path:     path,
-			Method:   method,
-			Args:     params,
-		},
-	)
+	r := &data.Request{
+		NodeName: nodeName,
+		Path:     path,
+		Method:   method,
+	}
+	e := r.SetParameters(params...)
+	if e != nil {
+		return nil, e
+	}
+	return node.ExecuteService(r)
 }
 
 //func Call(path, methodName string, params ...interface{}) ([]reflect.Value, error, bool) {

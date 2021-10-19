@@ -56,15 +56,19 @@ type Method struct {
 
 // Execute 执行方法
 // TODO：此方法需要进行性能分析，并对性能做出优化
-func (m *Method) Execute(args []interface{}) (*data.Result, error) {
-	inputArgsLen := len(args)
-	if inputArgsLen != m.ParamCount {
+func (m *Method) Execute(params [][]byte) (*data.Result, error) {
+	paramsLen := len(params)
+	if paramsLen != m.ParamCount {
 		return nil, errors.New("方法参数个数不相符！")
 	}
 	inputArgs := make([]reflect.Value, m.ParamCount)
-	for i := 0; i < inputArgsLen; i++ {
+	for i := 0; i < paramsLen; i++ {
 		// TODO： 检查输入参数是否符合方法声明
-		inputArgs[i] = reflect.ValueOf(args[i]).Convert(m.ParamsType[i])
+		param, e := data.DecodeByType(params[i], m.ParamsType[i])
+		if e != nil {
+			return nil, e
+		}
+		inputArgs[i] = reflect.ValueOf(param)
 	}
 	outs := m.MethodInstance.Call(inputArgs)
 	outlen := len(outs)
@@ -145,7 +149,7 @@ func ExecuteService(request *data.Request) (*data.Result, error) {
 		return nil, fmt.Errorf("方法没有找到,path:%v,method:%v", request.Path, request.Method)
 	}
 	// 执行方法
-	return m.Execute(request.Args)
+	return m.Execute(request.Parameters)
 }
 
 // ESNode rpcx暴露的服务

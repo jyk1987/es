@@ -5,7 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"gitee.com/jyk1987/es/data"
+	"gitee.com/jyk1987/es/log"
 	"github.com/smallnest/rpcx/client"
+	"time"
 )
 
 func main() {
@@ -31,31 +33,26 @@ func main() {
 		NodeName: "",
 		Path:     "main.ServerDemo",
 		Method:   "Service1",
-		Args:     args,
 	}
+	reqs.SetParameters(args...)
 
-	result := new(data.Result)
-	println("开始调用")
-	err = xclient.Call(context.Background(), "Execute", reqs, result)
-	println("完成调用")
-	if err != nil {
-		fmt.Println("调用失败:", err)
+	begin := time.Now()
+	count := 10000 * 10
+	log.Log.Info("开始测试", count)
+	for i := 0; i < count; i++ {
+		result := new(data.Result)
+		err = xclient.Call(context.Background(), "Execute", reqs, result)
+		if err != nil {
+			fmt.Println("调用失败:", err)
+		}
 	}
-	for i := 0; i < len(result.Returns); i++ {
-		r := result.Returns[i]
-		fmt.Println(string(r.Binary))
-	}
-	//r := ""
-	//e := errors.New("")
-	//err = result.GetResult(func(str string, er error) {
-	//	r = str
-	//	e = er
-	//})
-	//if err != nil {
-	//	fmt.Printf("failed to convert result: %v", err)
+	end := time.Now()
+	log.Log.Info("测试结束，总耗时：", end.Sub(begin))
+	//log.Log.Info("平均耗时：", end/time.Duration(count))
+
+	//for i := 0; i < len(result.Returns); i++ {
+	//	r := result.Returns[i]
+	//	fmt.Println(string(r.Binary))
 	//}
-	//if e != nil {
-	//	println(e.Error())
-	//}
-	//fmt.Println(r)
+
 }

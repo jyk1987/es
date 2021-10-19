@@ -1,14 +1,14 @@
 package log
 
 import (
-	"github.com/sirupsen/logrus"
-	"os"
+	_ "github.com/gogf/gf"
+	"github.com/gogf/gf/os/glog"
 )
 
-var Log *logrus.Logger
+var Log *glog.Logger
 
 func init() {
-	Log = logrus.New()
-	Log.SetLevel(logrus.DebugLevel)
-	Log.Out = os.Stdout
+	Log = glog.New()
+	Log.SetStdoutPrint(true)
+	Log.SetFlags(glog.F_FILE_SHORT | glog.F_TIME_STD)
 }

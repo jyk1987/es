@@ -2,8 +2,8 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"gitee.com/jyk1987/es"
+	"gitee.com/jyk1987/es/log"
 	"gitee.com/jyk1987/es/node"
 )
 
@@ -14,8 +14,8 @@ type ServerDemo struct {
 
 func (*ServerDemo) Service1(a, b string, c []byte) (string, *ServerDemo, []int, error) {
 	sd := &ServerDemo{Name: "张三", Value: &ServerDemo{Name: "张小三"}}
-	fmt.Println(c)
-	println("input args:", a, b)
+	//fmt.Println(c)
+	//println("input args:", a, b)
 	return a + b, sd, []int{1, 2, 3}, errors.New("sdasdasd")
 }
 
@@ -28,10 +28,10 @@ func main() {
 	result, err := es.Call("", "main.ServerDemo", "Service1", "你好", "世界", c)
 	// 判断调用过程中是否有出错
 	if err != nil {
-		println("调用服务方法出错", err)
+		log.Log.Error("调用服务方法出错", err)
 		return
 	}
-	fmt.Println(result.Returns)
+	log.Log.Debug(result.Returns)
 	//// 声明与服务方法相同的返回参数用于接受返回参数
 	//var r string
 	//var e error
