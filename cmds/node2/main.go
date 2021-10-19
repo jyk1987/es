@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 
@@ -37,19 +36,20 @@ func main() {
 		fmt.Printf("failed to call: %v", err)
 	}
 	for i := 0; i < len(result.Returns); i++ {
-
+		r := result.Returns[i]
+		fmt.Println(r)
 	}
-	r := ""
-	e := errors.New("")
-	err = result.GetResult(func(str string, er error) {
-		r = str
-		e = er
-	})
-	if err != nil {
-		fmt.Printf("failed to convert result: %v", err)
-	}
-	if e != nil {
-		println(e.Error())
-	}
-	fmt.Println(r)
+	//r := ""
+	//e := errors.New("")
+	//err = result.GetResult(func(str string, er error) {
+	//	r = str
+	//	e = er
+	//})
+	//if err != nil {
+	//	fmt.Printf("failed to convert result: %v", err)
+	//}
+	//if e != nil {
+	//	println(e.Error())
+	//}
+	//fmt.Println(r)
 }

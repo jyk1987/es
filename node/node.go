@@ -67,9 +67,10 @@ func (m *Method) Execute(args []interface{}) (*data.Result, error) {
 	outs := m.MethodInstance.Call(inputArgs)
 	// 转换数据为interface类型，TODO：是否可以转换成[]byte数据?
 	outlen := len(outs)
-	outDatas := make([]interface{}, outlen)
+	//outDatas := make([]interface{}, outlen)
+	outDatas := make([]data.ESData, outlen)
 	for i := 0; i < outlen; i++ {
-		outDatas[i] = outs[i].Interface()
+		outDatas[i] = *data.NewESData(outs[i])
 	}
 	return &data.Result{Returns: outDatas}, nil
 }
