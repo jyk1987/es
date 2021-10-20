@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
+	"gitee.com/jyk1987/es/config"
+	"gitee.com/jyk1987/es/log"
 	"github.com/smallnest/rpcx/server"
 	"time"
 )
@@ -74,10 +77,16 @@ func (is *ESIndexServer) Ping(ctx context.Context, ping *Ping, reply *Reply) err
 	return nil
 }
 
-func InitESIndexServer() {
-	addr := flag.String("addr", "0.0.0.0:3456", "server address")
+func InitESIndexServer() error {
+	cfg, err := config.GetConfig()
+	if err != nil {
+		log.Log.Error("加载配置文件出错:", err)
+		return err
+	}
+	addr := flag.String("addr", fmt.Sprintf("0.0.0.0:%v", cfg.Port), "server address")
 	flag.Parse()
 	s := server.NewServer()
 	s.Register(new(ESIndexServer), "")
 	s.Serve("tcp", *addr)
+	return nil
 }

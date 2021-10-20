@@ -32,8 +32,14 @@ func GetCurrentDirectory() string {
 	}
 	return strings.Replace(dir, "\\", "/", -1)
 }
+
+func GetRunDirectory() string {
+	path, _ := os.Getwd()
+	return path
+}
+
 func GetConfigPath() string {
-	basePath := GetCurrentDirectory()
+	basePath := GetRunDirectory()
 	findPath := func(p string) string {
 		//TODO:需要添加目录搜索功能
 		configPath := filepath.Join(p, ESConfigPath)
