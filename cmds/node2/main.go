@@ -7,6 +7,7 @@ import (
 	"gitee.com/jyk1987/es/data"
 	"gitee.com/jyk1987/es/log"
 	"github.com/smallnest/rpcx/client"
+	"sync"
 	"time"
 )
 
@@ -42,21 +43,30 @@ func main() {
 	reqs.SetParameters(args...)
 
 	begin := time.Now()
-	count := 1 //10000 * 100
+	count := 10000 * 100
+	execCount := 0
+	tcount := 100000
 	log.Log.Info("开始测试", count)
-	for i := 0; i < count; i++ {
-		result := new(data.Result)
-		err = xclient.Call(context.Background(), "Execute", reqs, result)
-		if err != nil {
-			fmt.Println("调用失败:", err)
-		}
-		for i := 0; i < len(result.Returns); i++ {
-			r := result.Returns[i]
-			fmt.Println(string(r.Binary))
-		}
+	wg := sync.WaitGroup{}
+	for i := 0; i < tcount; i++ {
+		wg.Add(1)
+		go func() {
+			for {
+				if execCount++; execCount > count {
+					break
+				}
+				result := new(data.Result)
+				err = xclient.Call(context.Background(), "Execute", reqs, result)
+				if err != nil {
+					fmt.Println("调用失败:", err)
+				}
+			}
+			wg.Done()
+		}()
 	}
+	wg.Wait()
 	end := time.Now()
-	log.Log.Info("测试结束，总耗时：", end.Sub(begin))
+	log.Log.Info(tcount, "线程测试", count/10000, "万次，测试结束，总耗时：", end.Sub(begin))
 	//log.Log.Info("平均耗时：", end/time.Duration(count))
 
 }

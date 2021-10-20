@@ -5,6 +5,8 @@ import (
 	"gitee.com/jyk1987/es/node"
 )
 
+const ESVersion = 1
+
 // Reg 注册本地服务
 func Reg(serviceInstance interface{}) {
 	node.Reg(serviceInstance)

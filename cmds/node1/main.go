@@ -14,7 +14,7 @@ type ServerDemo struct {
 func (*ServerDemo) Service1(a, b string, c []byte, sd *ServerDemo) (string, *ServerDemo, []int, error) {
 	sd.Value = &ServerDemo{Name: sd.Name + "儿子"}
 	//fmt.Println(c)
-	println("input args:", a, b, c, sd)
+	//println("input args:", a, b, c, sd)
 	return a + b, sd, []int{1, 2, 3}, nil
 }
 
