@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"gitee.com/jyk1987/es"
 	"gitee.com/jyk1987/es/log"
 	"gitee.com/jyk1987/es/node"
@@ -15,41 +14,26 @@ type ServerDemo struct {
 func (*ServerDemo) Service1(a, b string, c []byte, sd *ServerDemo) (string, *ServerDemo, []int, error) {
 	sd.Value = &ServerDemo{Name: sd.Name + "儿子"}
 	//fmt.Println(c)
-	//println("input args:", a, b)
-	return a + b, sd, []int{1, 2, 3}, errors.New("sdasdasd")
+	println("input args:", a, b, c, sd)
+	return a + b, sd, []int{1, 2, 3}, nil
 }
 
 func init() {
 	es.Reg(new(ServerDemo))
 }
 func main() {
-	c := []byte("sfasf")
+	//c := []byte("sfasf")
 	sd := &ServerDemo{Name: "张三"}
 	// 调用服务
-	result, err := es.Call("", "main.ServerDemo", "Service1", "你好", "世界", c, sd)
+	result, err := es.Call("", "main.ServerDemo", "Service1", "你好", "世界", nil, sd)
 	// 判断调用过程中是否有出错
 	if err != nil {
 		log.Log.Error("调用服务方法出错", err)
 		return
 	}
-	log.Log.Debug(result.Returns)
-	//// 声明与服务方法相同的返回参数用于接受返回参数
-	//var r string
-	//var e error
-	//re := result.GetResult(func(result string, err error) {
-	//	r = result
-	//	e = err
-	//})
-	//if re != nil {
-	//	println(re.Error())
-	//	return
-	//}
-	//// 方法执行完成后续操作
-	//if e != nil {
-	//	println(e.Error())
-	//}
-	//println(r)
-	//println("服务测试完成")
-	//println("开启启动node...")
+	log.Log.Debug(result.GetData())
+	result.GetResult(func(s string, sd *ServerDemo, is []int, e error) {
+		log.Log.Debug(s, sd, is, e)
+	})
 	node.InitNodeServer()
 }

@@ -59,24 +59,29 @@ type Method struct {
 func (m *Method) Execute(params [][]byte) (*data.Result, error) {
 	paramsLen := len(params)
 	if paramsLen != m.ParamCount {
+		log.Log.Error("方法参数个数不相符:paramcount:", paramsLen, "method count:", m.ParamCount)
 		return nil, errors.New("方法参数个数不相符！")
 	}
 	inputArgs := make([]reflect.Value, m.ParamCount)
 	for i := 0; i < paramsLen; i++ {
-		// TODO： 检查输入参数是否符合方法声明
-		param, e := data.DecodeByType(params[i], m.ParamsType[i])
+		paramType := m.ParamsType[i]
+		param, e := data.DecodeDataByType(params[i], paramType)
 		if e != nil {
 			return nil, e
 		}
-		inputArgs[i] = reflect.ValueOf(param)
+		if param == nil {
+			inputArgs[i] = reflect.New(paramType).Elem()
+		} else {
+			inputArgs[i] = reflect.ValueOf(param)
+		}
 	}
 	outs := m.MethodInstance.Call(inputArgs)
-	outlen := len(outs)
-	outDatas := make([]*data.ESData, outlen)
-	for i := 0; i < outlen; i++ {
-		outDatas[i] = data.NewESData(outs[i])
+
+	r, e := data.NewResult(outs)
+	if e != nil {
+		return nil, e
 	}
-	return &data.Result{Returns: outDatas}, nil
+	return r, nil
 }
 
 // _NewService 创建一个服务
@@ -161,7 +166,7 @@ func (*ESNode) Execute(ctx context.Context, request *data.Request, result *data.
 	if err != nil {
 		return err
 	}
-	result.Returns = r.Returns
+	result.SetData(r.GetData())
 	return nil
 }
 
