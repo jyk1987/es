@@ -3,6 +3,7 @@ package es
 import (
 	"gitee.com/jyk1987/es/data"
 	"gitee.com/jyk1987/es/node"
+	_ "github.com/gogf/gf"
 )
 
 const ESVersion = 1

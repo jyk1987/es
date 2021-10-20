@@ -1,12 +1,13 @@
 package config
 
 import (
-	"gitee.com/jyk1987/es/log"
-	"github.com/gogf/gf/encoding/gjson"
-	"github.com/gogf/gf/os/gfile"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"gitee.com/jyk1987/es/log"
+	"github.com/gogf/gf/encoding/gjson"
+	"github.com/gogf/gf/os/gfile"
 )
 
 const DefaultPort = 8910
@@ -33,28 +34,29 @@ func GetCurrentDirectory() string {
 	return strings.Replace(dir, "\\", "/", -1)
 }
 
+// GetRunDirectory 获取启动指令的执行目录
 func GetRunDirectory() string {
 	path, _ := os.Getwd()
 	return path
 }
 
-func GetConfigPath() string {
-	basePath := GetRunDirectory()
-	findPath := func(p string) string {
-		//TODO:需要添加目录搜索功能
-		configPath := filepath.Join(p, ESConfigPath)
-		return configPath
-	}
-	return findPath(basePath)
-}
+// func GetConfigPath() string {
+// 	basePath := GetRunDirectory()
+// 	findPath := func(p string) string {
+// 		//TODO:需要添加目录搜索功能
+// 		configPath := filepath.Join(p, ESConfigPath)
+// 		return configPath
+// 	}
+// 	return findPath(basePath)
+// }
 
 func GetConfig(configFileName ...string) (*ESConfig, error) {
 	config := &ESConfig{Port: DefaultPort}
 	fileName := ESConfigFileName
-	if configFileName != nil && len(configFileName) > 0 {
+	if len(configFileName) > 0 {
 		fileName = configFileName[0]
 	}
-	fullPath := gfile.Join(GetConfigPath(), fileName)
+	fullPath := gfile.Join(ESConfigPath, fileName)
 	json, err := gjson.Load(fullPath)
 	if err != nil {
 		log.Log.Errorf("加载配置文件%v出错:%v", fullPath, err)
