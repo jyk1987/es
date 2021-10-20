@@ -17,14 +17,14 @@ func main() {
 		<-sigs
 		done <- true
 	}()
+	log.Log.Info("索引服务启动...")
 	go func() {
 		err := is.InitESIndexServer()
 		if err != nil {
 			log.Log.Panic(err)
 		}
 	}()
-	log.Log.Info("索引服务启动完成")
 	<-done
 	// TODO: 触发关闭代码，完成已经注册数据的序列化，方便下次启动加载。
-	log.Log.Info("所以服务关闭完成")
+	log.Log.Info("索引服务关闭完成")
 }
