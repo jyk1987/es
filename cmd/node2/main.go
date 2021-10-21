@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+
 	e := es.InitNode()
 	if e != nil {
 		log.Log.Error(e)
@@ -27,9 +28,9 @@ func main() {
 	args[3] = sd
 
 	begin := time.Now()
-	count := 10000 * 10
+	count := 10000 * 100
 	execCount := 0
-	tcount := 100
+	tcount := 1000
 	log.Log.Info("开始测试", count)
 	wg := sync.WaitGroup{}
 	for i := 0; i < tcount; i++ {

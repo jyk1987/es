@@ -26,7 +26,7 @@ const (
 	ServiceClientNode
 )
 
-var _ServiceIndexCache map[string]*is.IndexInfo
+var _ServiceIndexCache = make(map[string]*is.IndexInfo, 0)
 var _ServiceIndexVersion int64
 
 var _ClientCache = make(map[string]*_ServiceClient)
@@ -56,8 +56,8 @@ func callServiceExecute(nodeName, path, method string, params ...interface{}) (*
 	}
 	req.SetParameters(params...)
 	result := new(data.Result)
-	gmlock.Lock(sc.NodeName)
-	defer gmlock.Unlock(sc.NodeName)
+	gmlock.RLock(sc.NodeName)
+	defer gmlock.RUnlock(sc.NodeName)
 	e = c.Call(context.Background(), node.RpcExecuteFuncName, req, result)
 	if e != nil {
 		return nil, e
@@ -90,9 +90,9 @@ func callServerRegNode() error {
 		},
 	}
 	reply := new(is.Reply)
-	gmlock.Lock(IndexServerNodeName)
+	gmlock.RLock(IndexServerNodeName)
 	e = c.Call(context.Background(), is.RpcRegNodeFuncName, node, reply)
-	gmlock.Unlock(IndexServerNodeName)
+	gmlock.RUnlock(IndexServerNodeName)
 	if e != nil {
 		return e
 	}
@@ -115,9 +115,9 @@ func callServerPing() error {
 		ServiceIndexVersion: _ServiceIndexVersion,
 	}
 	reply := new(is.Reply)
-	gmlock.Lock(IndexServerNodeName)
+	gmlock.RLock(IndexServerNodeName)
 	e = c.Call(context.Background(), is.RpcPingFuncName, ping, reply)
-	gmlock.Unlock(IndexServerNodeName)
+	gmlock.RUnlock(IndexServerNodeName)
 	if reply.State == is.ReplyServiceNofound {
 		go callServerRegNode()
 	}
@@ -129,10 +129,23 @@ func callServerPing() error {
 }
 
 func _setServiceIndex(index map[string]*is.IndexInfo, version int64) {
-	if len(index) > 0 && version > 0 {
-		_ServiceIndexCache = index
+	if len(index) == 0 && version == 0 {
+		return
+	}
+
+	for nodeName, _ := range index {
+		gmlock.Lock(nodeName)
+		s := _ServiceIndexCache[nodeName]
+		if s == nil {
+			_ServiceIndexCache[nodeName] = index[nodeName]
+		}
+		cc := _ClientCache[nodeName]
+		if cc != nil && cc.xclient != nil {
+			//cc.xclient.Close()
+			cc.xclient = nil
+		}
 		_ServiceIndexVersion = version
-		// TODO 替换已经变更的服务信息，关闭并置空相应的客户端
+		gmlock.Unlock(nodeName)
 	}
 }
 
