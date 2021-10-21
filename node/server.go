@@ -4,10 +4,8 @@ package node
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"gitee.com/jyk1987/es/data"
-	"gitee.com/jyk1987/es/log"
 	"github.com/smallnest/rpcx/server"
 )
 
@@ -45,15 +43,17 @@ func (*ESNode) Execute(ctx context.Context, request *data.Request, result *data.
 }
 
 // InitNodeServer 初始化rpc服务端
-func InitNodeServer(configFile ...string) {
+func InitNodeServer(configFile ...string) error {
 	cfg, e := data.GetConfig(configFile...)
 	if e != nil {
-		log.Log.Error("配置文件加载失败:", e)
+		return e
 	}
-	Config = cfg
-	addr := flag.String("addr", fmt.Sprintf("0.0.0.0:%v", Config.Port), "server address")
-	flag.Parse()
+	_Config = cfg
+	return nil
+}
+
+func StartNodeServer() {
 	s := server.NewServer()
 	s.Register(new(ESNode), "")
-	s.Serve("tcp", *addr)
+	go s.Serve("tcp", fmt.Sprintf("0.0.0.0:%v", GetNodeConfig().Port))
 }

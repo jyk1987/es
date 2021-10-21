@@ -1,29 +1,20 @@
 package main
 
 import (
-	"context"
-	"flag"
-	"fmt"
-	"gitee.com/jyk1987/es/data"
+	"gitee.com/jyk1987/es"
 	"gitee.com/jyk1987/es/log"
-	"github.com/smallnest/rpcx/client"
 	"sync"
 	"time"
 )
 
 func main() {
-	addr := flag.String("addr", "localhost:3456", "server address")
-	flag.Parse()
-	d, err := client.NewPeer2PeerDiscovery("tcp@"+*addr, "")
-	if err != nil {
-		println(err.Error())
+	e := es.InitNode()
+	if e != nil {
+		log.Log.Error(e)
 		return
 	}
+	go es.StartNode()
 
-	xclient := client.NewXClient("ESNode", client.Failtry, client.RandomSelect, d, client.DefaultOption)
-
-	defer xclient.Close()
-	//c := map[string]string{"saf": "safas"}
 	args := make([]interface{}, 4)
 	args[0] = "你好"
 	args[1] = "再见"
@@ -34,18 +25,11 @@ func main() {
 	}
 	sd := &ServerDemo{Name: "李四"}
 	args[3] = sd
-	reqs := &data.Request{
-		NodeName: "",
-		Path:     "main.ServerDemo",
-		Method:   "Service1",
-	}
-
-	reqs.SetParameters(args...)
 
 	begin := time.Now()
-	count := 10000 * 100
+	count := 10000 * 10
 	execCount := 0
-	tcount := 100000
+	tcount := 100
 	log.Log.Info("开始测试", count)
 	wg := sync.WaitGroup{}
 	for i := 0; i < tcount; i++ {
@@ -55,10 +39,15 @@ func main() {
 				if execCount++; execCount > count {
 					break
 				}
-				result := new(data.Result)
-				err = xclient.Call(context.Background(), "Execute", reqs, result)
-				if err != nil {
-					fmt.Println("调用失败:", err)
+				result, e := es.Call("node1", "main.ServerDemo", "Service1", args...)
+				if e != nil {
+					log.Log.Debug(e)
+				}
+				e = result.GetResult(func(s string, sd *ServerDemo, is []int, e error) {
+					//log.Log.Debug(s, sd, is, e)
+				})
+				if e != nil {
+					log.Log.Error(e)
 				}
 			}
 			wg.Done()

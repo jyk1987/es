@@ -29,6 +29,7 @@ type ReplyState int
 const (
 	ReplyOK ReplyState = iota
 	ReplyFail
+	ReplyServiceNofound
 )
 
 type Reply struct {
@@ -46,6 +47,7 @@ const RpcRegNodeFuncName = "RegNode"
 const RpcPingFuncName = "Ping"
 
 func (is *ESIndexServer) RegNode(ctx context.Context, node *Node, reply *Reply) error {
+	reply.ESVersion = data.ESVersion
 	if node == nil {
 		return errors.New("节点信息不能为空")
 	}
@@ -61,17 +63,18 @@ func (is *ESIndexServer) RegNode(ctx context.Context, node *Node, reply *Reply) 
 	if node.NodeInfo.Port == 0 {
 		return errors.New("节点port不能为0")
 	}
-	if node.Services == nil || len(node.Services) == 0 {
-		return errors.New("节点服务不能为空")
-	}
+	//if node.Services == nil || len(node.Services) == 0 {
+	//	log.Log.Error("节点服务不能为空", node)
+	//	return errors.New("节点服务不能为空")
+	//}
 	regNode(node)
 	reply.State = ReplyOK
-	reply.ESVersion = data.ESVersion
 	reply.ServiceIndex, reply.ServiceIndexVersion = getServiceIndex(0)
 	return nil
 }
 
 func (is *ESIndexServer) Ping(ctx context.Context, ping *Ping, reply *Reply) error {
+	reply.ESVersion = data.ESVersion
 	if ping.LastActive == 0 {
 		ping.LastActive = time.Now().UnixMilli()
 	}
@@ -81,9 +84,11 @@ func (is *ESIndexServer) Ping(ctx context.Context, ping *Ping, reply *Reply) err
 	if len(ping.UUID) == 0 {
 		return errors.New("节点UUID不能为空")
 	}
-	active(ping)
+	if !active(ping) {
+		reply.State = ReplyServiceNofound
+		return nil
+	}
 	reply.State = ReplyOK
-	reply.ESVersion = data.ESVersion
 	reply.ServiceIndex, reply.ServiceIndexVersion = getServiceIndex(ping.ServiceIndexVersion)
 	return nil
 }

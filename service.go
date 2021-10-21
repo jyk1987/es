@@ -29,14 +29,23 @@ func Call(nodeName, path, method string, params ...interface{}) (*data.Result, e
 	return callServiceExecute(nodeName, path, method, params...)
 }
 
-func InitNode() {
-	go node.InitNodeServer()
-	e := callServerRegNode()
+func InitNode() error {
+	e := node.InitNodeServer()
 	if e != nil {
-		log.Log.Error("初始化节点失败:", e)
+		return e
 	}
+	e = callServerRegNode()
+	if e != nil {
+		return e
+	}
+	return nil
+}
+
+func StartNode() {
+	go node.StartNodeServer()
+
 	for {
-		e = callServerPing()
+		e := callServerPing()
 		if e != nil {
 			log.Log.Error("ping 索引服务器失败:", e)
 		}

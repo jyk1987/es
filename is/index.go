@@ -87,20 +87,21 @@ func regNode(node *Node) error {
 	return nil
 }
 
-func active(ping *Ping) {
+func active(ping *Ping) bool {
 	_ServiceIndexLock.RLock()
 	defer _ServiceIndexLock.RUnlock()
 	s := _ServiceIndex[ping.NodeName]
 	if s == nil {
 		log.Log.Warning("需要刷新的服务信息不存在:", ping)
-		return
+		return false
 	}
 	n := s.Nodes[ping.UUID]
 	if n == nil {
 		log.Log.Warning("需要刷新的节点信息不存在:", ping)
-		return
+		return false
 	}
 	n.LastActive = ping.LastActive
+	return true
 }
 
 // NodeInfo 节点信息

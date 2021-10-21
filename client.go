@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gitee.com/jyk1987/es/data"
 	"gitee.com/jyk1987/es/is"
+	"gitee.com/jyk1987/es/log"
 	"gitee.com/jyk1987/es/node"
 	"gitee.com/jyk1987/es/tool"
 	"github.com/gogf/gf/os/gmlock"
@@ -36,6 +37,7 @@ type _ServiceClient struct {
 	NodeName string                  // 节点名
 	Type     ServiceClientType       // 客户端类型
 	Info     map[string]*is.NodeInfo //服务节点的信息
+	xclient  client.XClient          //通讯使用的client
 }
 
 func callServiceExecute(nodeName, path, method string, params ...interface{}) (*data.Result, error) {
@@ -43,7 +45,7 @@ func callServiceExecute(nodeName, path, method string, params ...interface{}) (*
 	if sc == nil {
 		return nil, errors.New("未找到服务:" + nodeName)
 	}
-	c, e := sc._CreateClient(node.RpcServiceName)
+	c, e := sc.getClient(node.RpcServiceName)
 	if e != nil {
 		return nil, e
 	}
@@ -54,11 +56,12 @@ func callServiceExecute(nodeName, path, method string, params ...interface{}) (*
 	}
 	req.SetParameters(params...)
 	result := new(data.Result)
+	gmlock.Lock(sc.NodeName)
+	defer gmlock.Unlock(sc.NodeName)
 	e = c.Call(context.Background(), node.RpcExecuteFuncName, req, result)
 	if e != nil {
 		return nil, e
 	}
-	defer c.Close()
 	return result, nil
 }
 
@@ -66,11 +69,10 @@ func callServerRegNode() error {
 	if _IndexServerClient == nil {
 		_InitIndexServerClient()
 	}
-	c, e := _IndexServerClient._CreateClient(is.RpcServiceName)
+	c, e := _IndexServerClient.getClient(is.RpcServiceName)
 	if e != nil {
 		return e
 	}
-	defer c.Close()
 	localIndex := node.GetLocalServiceIndex()
 	ip, e := tool.GetOutBoundIP()
 	if e != nil {
@@ -79,21 +81,22 @@ func callServerRegNode() error {
 	node := &is.Node{
 		Services: localIndex,
 		NodeInfo: &is.NodeInfo{
-			NodeName:   node.Config.Name,
+			NodeName:   node.GetNodeConfig().Name,
 			UUID:       _UUID,
 			LastActive: time.Now().UnixMilli(),
 			IP:         ip,
-			Port:       node.Config.Port,
+			Port:       node.GetNodeConfig().Port,
 			ESVersion:  data.ESVersion,
 		},
 	}
 	reply := new(is.Reply)
-	e = c.Call(context.Background(), is.RpcServiceName, node, reply)
+	gmlock.Lock(IndexServerNodeName)
+	e = c.Call(context.Background(), is.RpcRegNodeFuncName, node, reply)
+	gmlock.Unlock(IndexServerNodeName)
 	if e != nil {
 		return e
 	}
-	_ServiceIndexCache = reply.ServiceIndex
-	_ServiceIndexVersion = reply.ServiceIndexVersion
+	_setServiceIndex(reply.ServiceIndex, reply.ServiceIndexVersion)
 	return nil
 }
 
@@ -101,33 +104,47 @@ func callServerPing() error {
 	if _IndexServerClient == nil {
 		_InitIndexServerClient()
 	}
-	c, e := _IndexServerClient._CreateClient(is.RpcServiceName)
+	c, e := _IndexServerClient.getClient(is.RpcServiceName)
 	if e != nil {
 		return e
 	}
-	defer c.Close()
 	ping := &is.Ping{
-		NodeName:            node.Config.Name,
+		NodeName:            node.GetNodeConfig().Name,
 		UUID:                _UUID,
 		LastActive:          time.Now().UnixMilli(),
 		ServiceIndexVersion: _ServiceIndexVersion,
 	}
 	reply := new(is.Reply)
-	e = c.Call(context.Background(), is.RpcServiceName, ping, reply)
+	gmlock.Lock(IndexServerNodeName)
+	e = c.Call(context.Background(), is.RpcPingFuncName, ping, reply)
+	gmlock.Unlock(IndexServerNodeName)
+	if reply.State == is.ReplyServiceNofound {
+		go callServerRegNode()
+	}
 	if e != nil {
 		return e
 	}
-	if len(reply.ServiceIndex) > 0 && reply.ServiceIndexVersion > 0 {
-		_ServiceIndexCache = reply.ServiceIndex
-		_ServiceIndexVersion = reply.ServiceIndexVersion
-	}
+	_setServiceIndex(reply.ServiceIndex, reply.ServiceIndexVersion)
 	return nil
 }
 
-func (sc *_ServiceClient) _CreateClient(rpcServiceName string) (client.XClient, error) {
+func _setServiceIndex(index map[string]*is.IndexInfo, version int64) {
+	if len(index) > 0 && version > 0 {
+		_ServiceIndexCache = index
+		_ServiceIndexVersion = version
+		// TODO 替换已经变更的服务信息，关闭并置空相应的客户端
+	}
+}
+
+func (sc *_ServiceClient) getClient(rpcServiceName string) (client.XClient, error) {
+	if sc.xclient != nil {
+		return sc.xclient, nil
+	}
 	if len(sc.Info) == 0 {
 		return nil, fmt.Errorf("service:%v,没有在线的节点", sc.NodeName)
 	}
+	gmlock.Lock(sc.NodeName)
+	defer gmlock.Unlock(sc.NodeName)
 	if len(sc.Info) == 1 {
 		var node *is.NodeInfo
 		for _, info := range sc.Info {
@@ -138,8 +155,7 @@ func (sc *_ServiceClient) _CreateClient(rpcServiceName string) (client.XClient, 
 		if e != nil {
 			return nil, e
 		}
-		c := client.NewXClient(rpcServiceName, client.Failtry, client.RandomSelect, d, client.DefaultOption)
-		return c, nil
+		sc.xclient = client.NewXClient(rpcServiceName, client.Failtry, client.RandomSelect, d, client.DefaultOption)
 	} else {
 		address := make([]*client.KVPair, len(sc.Info))
 		index := 0
@@ -151,17 +167,21 @@ func (sc *_ServiceClient) _CreateClient(rpcServiceName string) (client.XClient, 
 		if e != nil {
 			return nil, e
 		}
-		c := client.NewXClient(rpcServiceName, client.Failtry, client.RandomSelect, d, client.DefaultOption)
-		return c, nil
+		sc.xclient = client.NewXClient(rpcServiceName, client.Failtry, client.RandomSelect, d, client.DefaultOption)
 	}
+	return sc.xclient, nil
 }
 
 const IndexServerNodeName = "ESIS"
 
 func _InitIndexServerClient() {
-	endpoint := node.Config.Server
+	endpoint := node.GetNodeConfig().Server
+	if len(endpoint) == 0 {
+		log.Log.Panic("为配置索引服务地址:", node.GetNodeConfig())
+	}
 	addr := strings.Split(endpoint, ":")
 	ip := addr[0]
+	log.Log.Debug(addr)
 	port, _ := strconv.Atoi(addr[1])
 	_IndexServerClient = _NewServiceClient(IndexServerNodeName, map[string]*is.NodeInfo{
 		IndexServerNodeName: {
@@ -175,17 +195,18 @@ func _InitIndexServerClient() {
 func getServiceClient(nodeName string) *_ServiceClient {
 	gmlock.RLock(nodeName)
 	if c := _ClientCache[nodeName]; c != nil {
-		gmlock.Unlock(nodeName)
+		gmlock.RUnlock(nodeName)
 		return c
 	}
+	gmlock.RUnlock(nodeName)
 	indexInfo := _ServiceIndexCache[nodeName]
 	if indexInfo == nil {
 		return nil
 	}
 	gmlock.Lock(nodeName)
+	defer gmlock.Unlock(nodeName)
 	c := _NewServiceClient(indexInfo.NodeName, indexInfo.Nodes)
 	_ClientCache[nodeName] = c
-	gmlock.Unlock(nodeName)
 	return c
 }
 

@@ -22,7 +22,14 @@ func init() {
 }
 
 // Config 节点配置文件，在初始化后存储
-var Config *data.ESConfig
+var _Config *data.ESConfig
+
+func GetNodeConfig() *data.ESConfig {
+	if _Config == nil {
+		_Config, _ = data.GetConfig()
+	}
+	return _Config
+}
 
 // _Service 服务,存储func
 type _Service struct {
@@ -161,7 +168,10 @@ func GetLocalServiceIndex() map[string]*is.ServiceInfo {
 	defer _ServicesLock.Unlock()
 	localIndex := make(map[string]*is.ServiceInfo, len(_Services))
 	for path, s := range _Services {
-		serviceInfo := &is.ServiceInfo{Path: path}
+		serviceInfo := &is.ServiceInfo{
+			Path:    path,
+			Methods: make(map[string]*is.MethodInfo, len(s.methods)),
+		}
 		for name, m := range s.methods {
 			methodInfo := &is.MethodInfo{
 				MethodName:  m.methodName,
@@ -171,8 +181,6 @@ func GetLocalServiceIndex() map[string]*is.ServiceInfo {
 				ReturnsType: make([]string, m.returnCount),
 			}
 			for i := 0; i < m.paramCount; i++ {
-				log.Log.Debug(m.paramsType[i].Name())
-				log.Log.Debug(m.paramsType[i].String())
 				methodInfo.ParamsType[i] = m.paramsType[i].String()
 			}
 			for i := 0; i < m.returnCount; i++ {
@@ -180,6 +188,7 @@ func GetLocalServiceIndex() map[string]*is.ServiceInfo {
 			}
 			serviceInfo.Methods[name] = methodInfo
 		}
+		localIndex[path] = serviceInfo
 	}
 	return localIndex
 }
