@@ -3,6 +3,8 @@ package main
 import (
 	"gitee.com/jyk1987/es"
 	"gitee.com/jyk1987/es/log"
+	"github.com/gogf/gf/os/gfile"
+	"io/ioutil"
 	"sync"
 	"time"
 )
@@ -15,7 +17,32 @@ func main() {
 		return
 	}
 	go es.StartNode()
+	testUpload()
+	//log.Log.Info("平均耗时：", end/time.Duration(count))
+}
 
+func testUpload() {
+	f, e := gfile.Open("README.md")
+	if e != nil {
+		log.Log.Error(e)
+		return
+	}
+	data, e := ioutil.ReadAll(f)
+	if e != nil {
+		log.Log.Error(e)
+		return
+	}
+	log.Log.Debug(len(data))
+	r, e := es.Call("node1", "main.ServerDemo", "UploadFile", "r.md", data)
+
+	if e != nil {
+		log.Log.Error(e)
+		return
+	}
+	log.Log.Debug(r.GetData())
+}
+
+func test() {
 	args := make([]interface{}, 4)
 	args[0] = "你好"
 	args[1] = "再见"
@@ -57,6 +84,4 @@ func main() {
 	wg.Wait()
 	end := time.Now()
 	log.Log.Info(tcount, "线程测试", count/10000, "万次，测试结束，总耗时：", end.Sub(begin))
-	//log.Log.Info("平均耗时：", end/time.Duration(count))
-
 }

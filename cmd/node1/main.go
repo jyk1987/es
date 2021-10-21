@@ -3,6 +3,7 @@ package main
 import (
 	"gitee.com/jyk1987/es"
 	"gitee.com/jyk1987/es/log"
+	"github.com/gogf/gf/os/gfile"
 	"time"
 )
 
@@ -16,6 +17,20 @@ func (*ServerDemo) Service1(a, b string, c []byte, sd *ServerDemo) (string, *Ser
 	//fmt.Println(c)
 	//println("input args:", a, b, c, sd)
 	return a + b, sd, []int{1, 2, 3}, nil
+}
+
+func (*ServerDemo) UploadFile(fileName string, data []byte) (string, error) {
+	f, e := gfile.Create(fileName)
+	if e != nil {
+		return "", e
+	}
+	_, e = f.Write(data)
+	if e != nil {
+		return "", e
+	}
+	log.Log.Debug(data)
+	f.Close()
+	return f.Name(), nil
 }
 
 func init() {
@@ -38,7 +53,7 @@ func main() {
 			continue
 		}
 		e = result.GetResult(func(s string, sd *ServerDemo, is []int, e error) {
-			log.Log.Debug(s, sd, is, e)
+			//log.Log.Debug(s, sd, is, e)
 		})
 		if e != nil {
 			log.Log.Error(e)
