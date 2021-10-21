@@ -3,7 +3,6 @@ package main
 import (
 	"gitee.com/jyk1987/es"
 	"gitee.com/jyk1987/es/log"
-	"gitee.com/jyk1987/es/node"
 )
 
 type ServerDemo struct {
@@ -35,5 +34,5 @@ func main() {
 	result.GetResult(func(s string, sd *ServerDemo, is []int, e error) {
 		log.Log.Debug(s, sd, is, e)
 	})
-	node.InitNodeServer()
+	es.InitNode()
 }

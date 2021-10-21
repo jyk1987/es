@@ -8,10 +8,16 @@ import (
 	"time"
 )
 
+// 节点存活检测间隔时间
 const _NodeActiveCheckInterval = time.Second * 1
-const _NodeActiveOverTime = time.Second * 5
 
-var _ServiceIndexVersion int64 // 所有服务状态的版本，服务索引服务发生变化后刷新此版本
+// 阶段存活超时，在超时时间过后如果节点仍然没有刷新自己的存活时间择剔除节点
+const _NodeActiveOverTime = time.Second * 3
+
+// _ServiceIndexVersion 所有服务状态的版本，服务索引服务发生变化后刷新此版本
+var _ServiceIndexVersion int64
+
+// RefreshServiceIndexVersion 刷新服务器存储的服务索引版本，在新增服务和node发生上线与离线时需要刷新
 func RefreshServiceIndexVersion() {
 	_ServiceIndexVersion = time.Now().UnixMilli()
 }
@@ -29,7 +35,15 @@ type IndexInfo struct {
 	Online       bool                    //服务是否在线
 	ServicesCode uint32                  // 当前存储的Services的hashCode，用于判断服务是否发生变化
 	Services     map[string]*ServiceInfo // 当前节点包含的服务
-	nodes        map[string]*NodeInfo    // 当前节点ming在线的实例
+	Nodes        map[string]*NodeInfo    // 当前节点ming在线的实例
+}
+
+// getServiceIndex 获取索引服务存储的所有服务的版本
+func getServiceIndex(version int64) (map[string]*IndexInfo, int64) {
+	if version < _ServiceIndexVersion {
+		return _ServiceIndex, _ServiceIndexVersion
+	}
+	return nil, 0
 }
 
 func regNode(node *Node) error {
@@ -51,7 +65,7 @@ func regNode(node *Node) error {
 			Online:       true,
 			ServicesCode: code,
 			Services:     node.Services,
-			nodes:        map[string]*NodeInfo{node.NodeInfo.UUID: node.NodeInfo},
+			Nodes:        map[string]*NodeInfo{node.NodeInfo.UUID: node.NodeInfo},
 		}
 		_ServiceIndex[node.NodeInfo.NodeName] = indexInfo
 		go node.NodeInfo.activeCheck()
@@ -61,9 +75,9 @@ func regNode(node *Node) error {
 			s.Services = node.Services
 			RefreshServiceIndexVersion()
 		}
-		nd := s.nodes[node.NodeInfo.UUID]
+		nd := s.Nodes[node.NodeInfo.UUID]
 		if nd == nil {
-			s.nodes[node.NodeInfo.UUID] = node.NodeInfo
+			s.Nodes[node.NodeInfo.UUID] = node.NodeInfo
 			go node.NodeInfo.activeCheck()
 			RefreshServiceIndexVersion()
 		} else {
@@ -81,7 +95,7 @@ func active(ping *Ping) {
 		log.Log.Warning("需要刷新的服务信息不存在:", ping)
 		return
 	}
-	n := s.nodes[ping.UUID]
+	n := s.Nodes[ping.UUID]
 	if n == nil {
 		log.Log.Warning("需要刷新的节点信息不存在:", ping)
 		return
@@ -126,11 +140,14 @@ func removeNode(node *NodeInfo) {
 	if s == nil {
 		return
 	}
-	n := s.nodes[node.UUID]
+	n := s.Nodes[node.UUID]
 	if n != nil {
 		n.LastActive = -1
 	}
-	delete(s.nodes, node.UUID)
+	delete(s.Nodes, node.UUID)
+	if len(s.Nodes) == 0 {
+		s.Online = false
+	}
 	log.Log.Infof("节点:%v,UUID:%v,被移除.", node.NodeName, node.UUID)
 }
 

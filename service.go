@@ -2,11 +2,14 @@ package es
 
 import (
 	"gitee.com/jyk1987/es/data"
+	"gitee.com/jyk1987/es/is"
+	"gitee.com/jyk1987/es/log"
 	"gitee.com/jyk1987/es/node"
 	_ "github.com/gogf/gf"
+	"time"
 )
 
-const ESVersion = 1
+var _IndexCache = make(map[string]*is.IndexInfo, 0)
 
 // Reg 注册本地服务
 func Reg(serviceInstance interface{}) {
@@ -23,5 +26,20 @@ func Call(nodeName, path, method string, params ...interface{}) (*data.Result, e
 	if e != nil {
 		return nil, e
 	}
-	return node.ExecuteService(r)
+	return callServiceExecute(nodeName, path, method, params...)
+}
+
+func InitNode() {
+	go node.InitNodeServer()
+	e := callServerRegNode()
+	if e != nil {
+		log.Log.Error("初始化节点失败:", e)
+	}
+	for {
+		e = callServerPing()
+		if e != nil {
+			log.Log.Error("ping 索引服务器失败:", e)
+		}
+		time.Sleep(time.Second)
+	}
 }

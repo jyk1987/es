@@ -19,9 +19,10 @@ type Node struct {
 
 // Ping 节点ping数据包
 type Ping struct {
-	NodeName   string
-	UUID       string
-	LastActive int64
+	NodeName            string
+	UUID                string
+	LastActive          int64
+	ServiceIndexVersion int64
 }
 type ReplyState int
 
@@ -31,12 +32,18 @@ const (
 )
 
 type Reply struct {
-	State        ReplyState            //状态
-	ServiceIndex map[string]*IndexInfo //所有服务的索引信息
+	State               ReplyState            //状态
+	ServiceIndexVersion int64                 //服务信息版本
+	ServiceIndex        map[string]*IndexInfo //所有服务的索引信息
+	ESVersion           int                   //当前的版本
 }
 
 type ESIndexServer struct {
 }
+
+const RpcServiceName = "ESIndexServer"
+const RpcRegNodeFuncName = "RegNode"
+const RpcPingFuncName = "Ping"
 
 func (is *ESIndexServer) RegNode(ctx context.Context, node *Node, reply *Reply) error {
 	if node == nil {
@@ -59,6 +66,8 @@ func (is *ESIndexServer) RegNode(ctx context.Context, node *Node, reply *Reply) 
 	}
 	regNode(node)
 	reply.State = ReplyOK
+	reply.ESVersion = data.ESVersion
+	reply.ServiceIndex, reply.ServiceIndexVersion = getServiceIndex(0)
 	return nil
 }
 
@@ -74,6 +83,8 @@ func (is *ESIndexServer) Ping(ctx context.Context, ping *Ping, reply *Reply) err
 	}
 	active(ping)
 	reply.State = ReplyOK
+	reply.ESVersion = data.ESVersion
+	reply.ServiceIndex, reply.ServiceIndexVersion = getServiceIndex(ping.ServiceIndexVersion)
 	return nil
 }
 
