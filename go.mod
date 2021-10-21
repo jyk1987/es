@@ -6,6 +6,7 @@ require (
 	github.com/gogf/gf v1.16.6
 	github.com/modern-go/reflect2 v1.0.2
 	github.com/smallnest/rpcx v1.6.11
+	github.com/vmihailenco/msgpack/v5 v5.3.4
 )
 
 require (
@@ -68,7 +69,6 @@ require (
 	github.com/tjfoc/gmsm v1.4.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fastrand v1.1.0 // indirect
-	github.com/vmihailenco/msgpack/v5 v5.3.4 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/xtaci/kcp-go v5.4.20+incompatible // indirect
 	go.opencensus.io v0.23.0 // indirect

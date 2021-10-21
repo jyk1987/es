@@ -5,7 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"gitee.com/jyk1987/es/config"
+	"gitee.com/jyk1987/es/data"
 	"gitee.com/jyk1987/es/log"
 	"github.com/smallnest/rpcx/server"
 	"time"
@@ -78,7 +78,7 @@ func (is *ESIndexServer) Ping(ctx context.Context, ping *Ping, reply *Reply) err
 }
 
 func InitESIndexServer() error {
-	cfg, err := config.GetConfig()
+	cfg, err := data.GetConfig()
 	if err != nil {
 		log.Log.Error("加载配置文件出错:", err)
 		return err

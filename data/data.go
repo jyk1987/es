@@ -3,6 +3,7 @@ package data
 import (
 	"errors"
 	"gitee.com/jyk1987/es/log"
+	"gitee.com/jyk1987/es/tool"
 	"reflect"
 )
 
@@ -28,7 +29,7 @@ func (r *Request) AddParameter(parameter interface{}) error {
 	if r.Parameters == nil {
 		r.Parameters = make([][]byte, 0)
 	}
-	b, e := EncodeData(parameter)
+	b, e := tool.EncodeData(parameter)
 	if e != nil {
 		log.Log.Error("参数转换失败！", parameter)
 		return e
@@ -50,7 +51,7 @@ func NewResult(vs []reflect.Value) (*Result, error) {
 	count := len(vs)
 	r.data = make([][]byte, count)
 	for i := 0; i < count; i++ {
-		b, e := EncodeDataByType(vs[i])
+		b, e := tool.EncodeDataByType(vs[i])
 		if e != nil {
 			log.Log.Error("增加返回数据出错：", e)
 			return r, e
@@ -72,7 +73,7 @@ func (r *Result) AddData(typeValue reflect.Value) error {
 	if r.data == nil {
 		r.data = make([][]byte, 0)
 	}
-	b, e := EncodeDataByType(typeValue)
+	b, e := tool.EncodeDataByType(typeValue)
 	if e != nil {
 		log.Log.Error("增加返回数据出错：", e)
 		return e
@@ -98,7 +99,7 @@ func (r *Result) GetResult(function interface{}) error {
 	in := make([]reflect.Value, funcInLen)
 	for i := 0; i < ft.NumIn(); i++ {
 		inType := ft.In(i)
-		obj, e := DecodeDataByType(r.data[i], inType)
+		obj, e := tool.DecodeDataByType(r.data[i], inType)
 		if e != nil {
 			return e
 		}

@@ -1,8 +1,8 @@
 package is
 
 import (
-	"gitee.com/jyk1987/es/data"
 	"gitee.com/jyk1987/es/log"
+	"gitee.com/jyk1987/es/tool"
 	"github.com/gogf/gf/encoding/ghash"
 	"sync"
 	"time"
@@ -33,7 +33,7 @@ type IndexInfo struct {
 }
 
 func regNode(node *Node) error {
-	d, e := data.EncodeData(node.Services)
+	d, e := tool.EncodeData(node.Services)
 	if e != nil {
 		log.Log.Error("节点注册失败:", node)
 		return e

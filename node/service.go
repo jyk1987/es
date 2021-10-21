@@ -4,6 +4,7 @@ import (
 	"errors"
 	"gitee.com/jyk1987/es/data"
 	"gitee.com/jyk1987/es/log"
+	"gitee.com/jyk1987/es/tool"
 	"reflect"
 	"sync"
 )
@@ -64,7 +65,7 @@ func (m *Method) Execute(request *data.Request) (*data.Result, error) {
 	for i := 0; i < paramsLen; i++ {
 		paramType := m.paramsType[i]
 		// 解码参数为相应方法参数type的interface
-		param, e := data.DecodeDataByType(params[i], paramType)
+		param, e := tool.DecodeDataByType(params[i], paramType)
 		if e != nil {
 			return nil, e
 		}

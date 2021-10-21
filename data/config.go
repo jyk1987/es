@@ -1,4 +1,4 @@
-package config
+package data
 
 import (
 	"os"
@@ -39,16 +39,6 @@ func GetRunDirectory() string {
 	path, _ := os.Getwd()
 	return path
 }
-
-// func GetConfigPath() string {
-// 	basePath := GetRunDirectory()
-// 	findPath := func(p string) string {
-// 		//TODO:需要添加目录搜索功能
-// 		configPath := filepath.Join(p, ESConfigPath)
-// 		return configPath
-// 	}
-// 	return findPath(basePath)
-// }
 
 func GetConfig(configFileName ...string) (*ESConfig, error) {
 	config := &ESConfig{Port: DefaultPort}
