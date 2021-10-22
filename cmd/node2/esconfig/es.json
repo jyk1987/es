@@ -2,5 +2,5 @@
   "name": "node2",
   "port": "8912",
   "key": "21jh312i3j123iju1203ij12i3ji12jkjf0j23nf09fj2389uf8",
-  "server": "192.168.1.200:8910"
+  "etcd": "localhost:2379"
 }

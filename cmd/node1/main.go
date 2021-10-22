@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"gitee.com/jyk1987/es"
 	"gitee.com/jyk1987/es/log"
 	"github.com/gogf/gf/os/gfile"
@@ -8,13 +9,15 @@ import (
 )
 
 type ServerDemo struct {
-	Name  string
-	Value *ServerDemo
+	Name      string
+	Value     *ServerDemo
+	CallCount int64
 }
 
-func (*ServerDemo) Service1(a, b string, c []byte, sd *ServerDemo) (string, *ServerDemo, []int, error) {
+func (s *ServerDemo) Service1(a, b string, c []byte, sd *ServerDemo) (string, *ServerDemo, []int, error) {
 	sd.Value = &ServerDemo{Name: sd.Name + "儿子"}
-	//fmt.Println(c)
+	s.CallCount++
+	fmt.Println(s.CallCount)
 	//println("input args:", a, b, c, sd)
 	return a + b, sd, []int{1, 2, 3}, nil
 }
@@ -37,13 +40,14 @@ func init() {
 	es.Reg(new(ServerDemo))
 }
 func main() {
-	e := es.InitNode()
+	e := es.InitES()
 	if e != nil {
 		log.Log.Error(e)
 		return
 	}
 	go es.StartNode()
 	for {
+		time.Sleep(time.Second * 1)
 		sd := &ServerDemo{Name: "张三"}
 		// 调用服务
 		result, err := es.Call("node1", "main.ServerDemo", "Service1", "你好", "世界", nil, sd)
@@ -53,12 +57,11 @@ func main() {
 			continue
 		}
 		e = result.GetResult(func(s string, sd *ServerDemo, is []int, e error) {
-			//log.Log.Debug(s, sd, is, e)
+			log.Log.Debug(s, sd, is, e)
 		})
 		if e != nil {
 			log.Log.Error(e)
 		}
-		time.Sleep(time.Second * 3)
 	}
 	//c := []byte("sfasf")
 

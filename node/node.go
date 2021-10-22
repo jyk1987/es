@@ -3,7 +3,6 @@ package node
 import (
 	"errors"
 	"gitee.com/jyk1987/es/data"
-	"gitee.com/jyk1987/es/is"
 	"gitee.com/jyk1987/es/log"
 	"gitee.com/jyk1987/es/tool"
 	"reflect"
@@ -163,17 +162,17 @@ func getService(path string) *_Service {
 }
 
 // GetLocalServiceIndex 获取本地服务器的索引信息
-func GetLocalServiceIndex() map[string]*is.ServiceInfo {
+func GetLocalServiceIndex() map[string]*data.ServiceInfo {
 	_ServicesLock.Lock()
 	defer _ServicesLock.Unlock()
-	localIndex := make(map[string]*is.ServiceInfo, len(_Services))
+	localIndex := make(map[string]*data.ServiceInfo, len(_Services))
 	for path, s := range _Services {
-		serviceInfo := &is.ServiceInfo{
+		serviceInfo := &data.ServiceInfo{
 			Path:    path,
-			Methods: make(map[string]*is.MethodInfo, len(s.methods)),
+			Methods: make(map[string]*data.MethodInfo, len(s.methods)),
 		}
 		for name, m := range s.methods {
-			methodInfo := &is.MethodInfo{
+			methodInfo := &data.MethodInfo{
 				MethodName:  m.methodName,
 				ParamCount:  m.paramCount,
 				ParamsType:  make([]string, m.paramCount),

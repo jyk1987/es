@@ -11,13 +11,13 @@ import (
 
 func main() {
 
-	e := es.InitNode()
+	e := es.InitES()
 	if e != nil {
 		log.Log.Error(e)
 		return
 	}
 	go es.StartNode()
-	testUpload()
+	test()
 	//log.Log.Info("平均耗时：", end/time.Duration(count))
 }
 
@@ -53,11 +53,11 @@ func test() {
 	}
 	sd := &ServerDemo{Name: "李四"}
 	args[3] = sd
-
+	es.Call("node1", "main.ServerDemo", "Service1", args...)
 	begin := time.Now()
 	count := 10000 * 100
 	execCount := 0
-	tcount := 1000
+	tcount := 100
 	log.Log.Info("开始测试", count)
 	wg := sync.WaitGroup{}
 	for i := 0; i < tcount; i++ {

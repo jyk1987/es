@@ -15,17 +15,15 @@ const ESVersion = 1
 const DefaultPort = 8910
 const ESConfigPath = "esconfig"
 const ESConfigFileName = "es.json"
+const ETCDBasePath = "/es_rpc"
 
 // ESConfig 配置文件映射结构
 type ESConfig struct {
-	Port   int    `json:"port"`   //服务端口,默认端口8910
-	Name   string `json:"name"`   //系统中的nodename用于区分不同服务
-	Key    string `json:"key"`    //链接密钥，用于链接到整个系统中
-	Server string `json:"server"` //索引服务器的访问端点
+	Port int    `json:"port"` //服务端口,默认端口8910
+	Name string `json:"name"` //系统中的nodename用于区分不同服务
+	Key  string `json:"key"`  //链接密钥，用于链接到整个系统中
+	Etcd string `json:"etcd"` //发现服务地址
 	//以下问索引服务配置
-	// 访问端点指的是一个可以公共可访问的端点，ip+端口 或者域名+端口
-	//IndexServer才需要访问端点，比如istest.kuaibang360.com:3456
-	Endpoint string `json:"endpoint"` // 访问端点
 }
 
 // GetCurrentDirectory 获取程序运行路径

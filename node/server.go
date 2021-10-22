@@ -6,7 +6,12 @@ import (
 	"context"
 	"fmt"
 	"gitee.com/jyk1987/es/data"
+	"gitee.com/jyk1987/es/log"
+	"gitee.com/jyk1987/es/tool"
+	"github.com/rcrowley/go-metrics"
+	"github.com/rpcxio/rpcx-etcd/serverplugin"
 	"github.com/smallnest/rpcx/server"
+	"time"
 )
 
 // _ExecuteService 执行（本地）服务
@@ -26,10 +31,12 @@ func _ExecuteService(request *data.Request) (*data.Result, error) {
 }
 
 // ESNode rpcx暴露的服务
-type ESNode struct{}
+type ESNode int
 
-// RpcServiceName 节点执行服务的rpc服务名
-const RpcServiceName = "ESNode"
+// RpcGetInfoName 获取节点信息
+const RpcGetInfoName = "GetInfo"
+
+// RpcExecuteFuncName 执行服务
 const RpcExecuteFuncName = "Execute"
 
 // Execute 执行服务
@@ -42,8 +49,18 @@ func (*ESNode) Execute(ctx context.Context, request *data.Request, result *data.
 	return nil
 }
 
-// InitNodeServer 初始化rpc服务端
-func InitNodeServer(configFile ...string) error {
+// GetInfo 获取信息
+func (*ESNode) GetInfo(ctx context.Context, request *data.Request, result *data.Result) error {
+	r, err := _ExecuteService(request)
+	if err != nil {
+		return err
+	}
+	result.SetData(r.GetData())
+	return nil
+}
+
+// InitESConfig 初始化rpc服务端
+func InitESConfig(configFile ...string) error {
 	cfg, e := data.GetConfig(configFile...)
 	if e != nil {
 		return e
@@ -54,6 +71,23 @@ func InitNodeServer(configFile ...string) error {
 
 func StartNodeServer() {
 	s := server.NewServer()
-	s.Register(new(ESNode), "")
-	go s.Serve("tcp", fmt.Sprintf("0.0.0.0:%v", GetNodeConfig().Port))
+	addRegistryPlugin(s)
+	s.RegisterName(GetNodeConfig().Name, new(ESNode), "")
+	s.Serve("tcp", fmt.Sprintf("0.0.0.0:%v", GetNodeConfig().Port))
+}
+
+func addRegistryPlugin(s *server.Server) {
+	ip, _ := tool.GetOutBoundIP()
+	r := &serverplugin.EtcdV3RegisterPlugin{
+		ServiceAddress: fmt.Sprintf("tcp@%v:%v", ip, GetNodeConfig().Port),
+		EtcdServers:    []string{GetNodeConfig().Etcd},
+		BasePath:       data.ETCDBasePath,
+		Metrics:        metrics.NewRegistry(),
+		UpdateInterval: time.Second,
+	}
+	err := r.Start()
+	if err != nil {
+		log.Log.Fatal(err)
+	}
+	s.Plugins.Add(r)
 }
