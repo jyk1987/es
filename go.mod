@@ -5,10 +5,10 @@ go 1.17
 require (
 	github.com/gogf/gf v1.16.6
 	github.com/modern-go/reflect2 v1.0.2
-	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0
+	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
 	github.com/rpcxio/rpcx-etcd v0.0.0-20210907081219-a9e31da236e8
 	github.com/smallnest/rpcx v1.6.11
-	github.com/vmihailenco/msgpack/v5 v5.3.4
+	github.com/vmihailenco/msgpack/v5 v5.3.5
 )
 
 require (
