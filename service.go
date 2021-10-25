@@ -9,8 +9,8 @@ import (
 var _IndexCache = make(map[string]*data.IndexInfo, 0)
 
 // Reg 注册本地服务
-func Reg(serviceInstance interface{}) {
-	node.Reg(serviceInstance)
+func Reg(servicePath string, serviceInstance interface{}) {
+	node.Reg(servicePath, serviceInstance)
 }
 
 func Call(nodeName, path, method string, params ...interface{}) (*data.Result, error) {

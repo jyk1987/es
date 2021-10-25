@@ -39,7 +39,7 @@ func (*ServerDemo) UploadFile(fileName string, data []byte) (string, error) {
 }
 
 func init() {
-	es.Reg(new(ServerDemo))
+	es.Reg("nana", new(ServerDemo))
 }
 func main() {
 	e := es.InitES()
@@ -50,21 +50,7 @@ func main() {
 	go es.StartNode()
 	for {
 		time.Sleep(time.Second * 1)
-		//sd := &ServerDemo{Name: "张三"}
-		//// 调用服务
-		//result, err := es.Call("node1", "main.ServerDemo", "Service1", "你好", "世界", nil, sd)
-		//// 判断调用过程中是否有出错
-		//if err != nil {
-		//	log.Log.Error("调用服务方法出错", err)
-		//	continue
-		//}
-		//e = result.GetResult(func(s string, sd *ServerDemo, is []int, e error) {
-		//	log.Log.Debug(s, sd, is, e)
-		//})
-		//if e != nil {
-		//	log.Log.Error(e)
-		//}
+
 	}
-	//c := []byte("sfasf")
 
 }

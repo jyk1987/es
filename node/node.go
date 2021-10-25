@@ -1,11 +1,14 @@
 package node
 
 import (
+	"bytes"
 	"errors"
 	"github.com/jyk1987/es/data"
 	"github.com/jyk1987/es/log"
 	"github.com/jyk1987/es/tool"
 	"reflect"
+	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -103,16 +106,25 @@ func (m *_Method) Execute(request *data.Request) (*data.Result, error) {
 }
 
 // _NewService 创建一个服务
-func _NewService(instRef interface{}) *_Service {
+func _NewService(PkgPath string, instRef interface{}) *_Service {
+	if len(PkgPath) == 0 {
+		log.Log.Error("PkgPath is empty string")
+		return nil
+	}
+	if instRef == nil {
+		log.Log.Error("instRef is nil interface")
+		return nil
+	}
 	s := &_Service{}
 	instType := reflect.TypeOf(instRef) //获取实例的类型
 	if instType.String()[0] != '*' {
 		log.Log.Panic("请使用new方式创建服务，然后进行注册！", instType)
 	}
 	instValue := reflect.ValueOf(instRef) //获取实例值
-	s.Path = instType.String()[1:]        //设置实例的包路径
-	s.instance = instValue                //设置实例引用
-	log.Log.Info("注册服务:", s.Path)
+	structName := strings.Split(instType.String(), ".")[1]
+	s.Path = PkgPath + "." + structName //设置实例的包路径
+	s.instance = instValue              //设置实例引用
+	log.Log.Info("register:", s.Path)
 	methodCount := instType.NumMethod() //获取方法总数
 	methods := make(map[string]*_Method, methodCount)
 	for i := 0; i < methodCount; i++ {
@@ -120,15 +132,21 @@ func _NewService(instRef interface{}) *_Service {
 		m.methodName = instType.Method(i).Name            //方法名称
 		m.instance = instValue.MethodByName(m.methodName) //方法实例
 		m.methodType = m.instance.Type()                  //方法类型
-		log.Log.Info("注册方法", i, ":", m.methodName)
+		log.Log.Info("method", i, ":", m.methodName)
 		//初始化方法的所有参数数据
 		paramCount := m.methodType.NumIn() //获取参数个数
 		m.paramCount = paramCount          //设置参数个数
 		paramsType := make([]reflect.Type, paramCount)
+		parameterContent := bytes.Buffer{}
 		for j := 0; j < paramCount; j++ {
 			paramsType[j] = m.methodType.In(j) //获取参数的Type
-			log.Log.Info("参数", j, m.methodType.In(j))
+			parameterContent.WriteString("p")
+			parameterContent.WriteString(strconv.Itoa(j))
+			parameterContent.WriteString(":")
+			parameterContent.WriteString(m.methodType.In(j).String())
+			parameterContent.WriteString("\t")
 		}
+		log.Log.Info(parameterContent.String())
 		m.paramsType = paramsType
 		//初始化方法的所有返回数据
 		returnCount := m.methodType.NumOut() //获取返回数据个数
@@ -147,12 +165,12 @@ func _NewService(instRef interface{}) *_Service {
 }
 
 // Reg 注册本地服务
-func Reg(serviceInstance interface{}) {
-	service := _NewService(serviceInstance)
+func Reg(servicePath string, serviceInstance interface{}) {
+	service := _NewService(servicePath, serviceInstance)
 	_ServicesLock.Lock()
 	_Services[service.Path] = service
 	_ServicesLock.Unlock()
-	log.Log.Info("注册完毕:", service.Path)
+	log.Log.Info("complete.")
 }
 
 // getService 获取一个服务
