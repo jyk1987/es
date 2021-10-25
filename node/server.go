@@ -76,8 +76,14 @@ func StartNodeServer() {
 	if e != nil {
 		log.Panic(e)
 	}
-	s.RegisterName(cfg.Name, new(ESNode), "")
-	s.Serve("tcp", fmt.Sprintf("0.0.0.0:%v", cfg.Port))
+	e = s.RegisterName(cfg.Name, new(ESNode), "")
+	if e != nil {
+		log.Panic(e)
+	}
+	e = s.Serve("tcp", fmt.Sprintf("0.0.0.0:%v", cfg.Port))
+	if e != nil {
+		log.Panic(e)
+	}
 }
 
 func addRegistryPlugin(s *server.Server) error {
@@ -86,8 +92,8 @@ func addRegistryPlugin(s *server.Server) error {
 	if len(cfg.Endpoint) > 0 {
 		endpoint = cfg.Endpoint
 	} else {
-		outip, _ := tool.GetOutBoundIP()
-		endpoint = fmt.Sprintf("tcp@%v:%v", outip, GetNodeConfig().Port)
+		local, _ := tool.GetOutBoundIP()
+		endpoint = fmt.Sprintf("tcp@%v:%v", local, GetNodeConfig().Port)
 	}
 	r := &serverplugin.EtcdV3RegisterPlugin{
 		ServiceAddress: endpoint,
