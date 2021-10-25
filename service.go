@@ -1,7 +1,6 @@
 package es
 
 import (
-	_ "github.com/gogf/gf"
 	"github.com/jyk1987/es/data"
 	"github.com/jyk1987/es/node"
 )
