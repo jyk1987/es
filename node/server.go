@@ -5,8 +5,8 @@ package node
 import (
 	"context"
 	"fmt"
-	"gitee.com/jyk1987/es/data"
-	"gitee.com/jyk1987/es/tool"
+	"github.com/jyk1987/es/data"
+	"github.com/jyk1987/es/tool"
 	"github.com/rcrowley/go-metrics"
 	"github.com/rpcxio/rpcx-etcd/serverplugin"
 	"github.com/smallnest/rpcx/server"

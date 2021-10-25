@@ -6,9 +6,9 @@ import (
 	"strings"
 	"sync"
 
-	"gitee.com/jyk1987/es/log"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/os/gfile"
+	"github.com/jyk1987/es/log"
 )
 
 const ESVersion = 1

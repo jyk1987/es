@@ -2,9 +2,9 @@ package node
 
 import (
 	"errors"
-	"gitee.com/jyk1987/es/data"
-	"gitee.com/jyk1987/es/log"
-	"gitee.com/jyk1987/es/tool"
+	"github.com/jyk1987/es/data"
+	"github.com/jyk1987/es/log"
+	"github.com/jyk1987/es/tool"
 	"reflect"
 	"sync"
 )

@@ -2,11 +2,11 @@ package es
 
 import (
 	"context"
-	"gitee.com/jyk1987/es/data"
-	"gitee.com/jyk1987/es/log"
-	"gitee.com/jyk1987/es/node"
 	"github.com/gogf/gf/os/gmlock"
 	"github.com/gogf/gf/util/guid"
+	"github.com/jyk1987/es/data"
+	"github.com/jyk1987/es/log"
+	"github.com/jyk1987/es/node"
 	etcd_client "github.com/rpcxio/rpcx-etcd/client"
 	"github.com/smallnest/rpcx/client"
 )

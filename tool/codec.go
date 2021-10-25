@@ -3,7 +3,7 @@ package tool
 import (
 	"bytes"
 	"errors"
-	"gitee.com/jyk1987/es/log"
+	"github.com/jyk1987/es/log"
 	"github.com/modern-go/reflect2"
 	"github.com/vmihailenco/msgpack/v5"
 	"reflect"

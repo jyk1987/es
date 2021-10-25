@@ -1,9 +1,9 @@
 package main
 
 import (
-	"gitee.com/jyk1987/es"
-	"gitee.com/jyk1987/es/log"
 	"github.com/gogf/gf/os/gfile"
+	"github.com/jyk1987/es"
+	"github.com/jyk1987/es/log"
 	"io/ioutil"
 	"sync"
 	"time"

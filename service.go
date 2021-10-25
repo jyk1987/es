@@ -1,9 +1,9 @@
 package es
 
 import (
-	"gitee.com/jyk1987/es/data"
-	"gitee.com/jyk1987/es/node"
 	_ "github.com/gogf/gf"
+	"github.com/jyk1987/es/data"
+	"github.com/jyk1987/es/node"
 )
 
 var _IndexCache = make(map[string]*data.IndexInfo, 0)

@@ -2,8 +2,8 @@ package data
 
 import (
 	"errors"
-	"gitee.com/jyk1987/es/log"
-	"gitee.com/jyk1987/es/tool"
+	"github.com/jyk1987/es/log"
+	"github.com/jyk1987/es/tool"
 	"reflect"
 )
 
