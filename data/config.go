@@ -19,11 +19,11 @@ const ETCDBasePath = "/es_rpc"
 
 // ESConfig 配置文件映射结构
 type ESConfig struct {
-	Port int    `json:"port"` //服务端口,默认端口8910
-	Name string `json:"name"` //系统中的nodename用于区分不同服务
-	Key  string `json:"key"`  //链接密钥，用于链接到整个系统中
-	Etcd string `json:"etcd"` //发现服务地址
-	//以下问索引服务配置
+	Port     int    `json:"port"`     //服务端口,默认端口8910
+	Name     string `json:"name"`     //系统中的nodename用于区分不同服务
+	Key      string `json:"key"`      //链接密钥，用于链接到整个系统中
+	Etcd     string `json:"etcd"`     //发现服务地址
+	Endpoint string `json:"endpoint"` //访问端点，如果配置，服务启动时会使用访问端点向etcd进行注册，其他服务会通过此访问端点来访问此服务
 }
 
 // GetCurrentDirectory 获取程序运行路径

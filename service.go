@@ -4,7 +4,6 @@ import (
 	"gitee.com/jyk1987/es/data"
 	"gitee.com/jyk1987/es/node"
 	_ "github.com/gogf/gf"
-	"time"
 )
 
 var _IndexCache = make(map[string]*data.IndexInfo, 0)
@@ -35,10 +34,11 @@ func InitES() error {
 	return nil
 }
 
+// StartNode 启动服务节点，此方法为阻塞方法，地用后服务会启动，不会有返回
 func StartNode() {
-	go node.StartNodeServer()
-
-	for {
-		time.Sleep(time.Minute)
+	cfg := node.GetNodeConfig()
+	if cfg == nil || cfg.Port == 0 {
+		return
 	}
+	node.StartNodeServer()
 }

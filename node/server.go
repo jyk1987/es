@@ -6,11 +6,11 @@ import (
 	"context"
 	"fmt"
 	"gitee.com/jyk1987/es/data"
-	"gitee.com/jyk1987/es/log"
 	"gitee.com/jyk1987/es/tool"
 	"github.com/rcrowley/go-metrics"
 	"github.com/rpcxio/rpcx-etcd/serverplugin"
 	"github.com/smallnest/rpcx/server"
+	"log"
 	"time"
 )
 
@@ -70,16 +70,27 @@ func InitESConfig(configFile ...string) error {
 }
 
 func StartNodeServer() {
+	cfg := GetNodeConfig()
 	s := server.NewServer()
-	addRegistryPlugin(s)
-	s.RegisterName(GetNodeConfig().Name, new(ESNode), "")
-	s.Serve("tcp", fmt.Sprintf("0.0.0.0:%v", GetNodeConfig().Port))
+	e := addRegistryPlugin(s)
+	if e != nil {
+		log.Panic(e)
+	}
+	s.RegisterName(cfg.Name, new(ESNode), "")
+	s.Serve("tcp", fmt.Sprintf("0.0.0.0:%v", cfg.Port))
 }
 
-func addRegistryPlugin(s *server.Server) {
-	ip, _ := tool.GetOutBoundIP()
+func addRegistryPlugin(s *server.Server) error {
+	cfg := GetNodeConfig()
+	var endpoint string
+	if len(cfg.Endpoint) > 0 {
+		endpoint = cfg.Endpoint
+	} else {
+		outip, _ := tool.GetOutBoundIP()
+		endpoint = fmt.Sprintf("tcp@%v:%v", outip, GetNodeConfig().Port)
+	}
 	r := &serverplugin.EtcdV3RegisterPlugin{
-		ServiceAddress: fmt.Sprintf("tcp@%v:%v", ip, GetNodeConfig().Port),
+		ServiceAddress: endpoint,
 		EtcdServers:    []string{GetNodeConfig().Etcd},
 		BasePath:       data.ETCDBasePath,
 		Metrics:        metrics.NewRegistry(),
@@ -87,7 +98,8 @@ func addRegistryPlugin(s *server.Server) {
 	}
 	err := r.Start()
 	if err != nil {
-		log.Log.Fatal(err)
+		return err
 	}
 	s.Plugins.Add(r)
+	return nil
 }

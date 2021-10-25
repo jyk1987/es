@@ -25,7 +25,12 @@ var _Config *data.ESConfig
 
 func GetNodeConfig() *data.ESConfig {
 	if _Config == nil {
-		_Config, _ = data.GetConfig()
+		cfg, e := data.GetConfig()
+		if e != nil {
+			log.Log.Error(e)
+			return nil
+		}
+		_Config = cfg
 	}
 	return _Config
 }

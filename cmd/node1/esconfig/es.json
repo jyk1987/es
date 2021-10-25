@@ -1,6 +1,7 @@
 {
   "name": "node1",
-  "port": "8911",
+  "port": 8911,
   "key": "21jh312i3j123iju1203ij12i3ji12jkjf0j23nf09fj2389uf8",
-  "etcd": "localhost:2379"
+  "etcd": "localhost:2379",
+  "endpoint": "192.168.1.201:8911"
 }
