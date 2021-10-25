@@ -1,13 +1,12 @@
 package node
 
 import (
-	"bytes"
 	"errors"
+	"fmt"
 	"github.com/jyk1987/es/data"
 	"github.com/jyk1987/es/log"
 	"github.com/jyk1987/es/tool"
 	"reflect"
-	"strconv"
 	"strings"
 	"sync"
 )
@@ -132,21 +131,20 @@ func _NewService(PkgPath string, instRef interface{}) *_Service {
 		m.methodName = instType.Method(i).Name            //方法名称
 		m.instance = instValue.MethodByName(m.methodName) //方法实例
 		m.methodType = m.instance.Type()                  //方法类型
-		log.Log.Info("method", i, ":", m.methodName)
+		//log.Log.Info("method", i, ":", m.methodName)
 		//初始化方法的所有参数数据
 		paramCount := m.methodType.NumIn() //获取参数个数
 		m.paramCount = paramCount          //设置参数个数
 		paramsType := make([]reflect.Type, paramCount)
-		parameterContent := bytes.Buffer{}
+
+		parameterContent := fmt.Sprintf("func %v(", m.methodName)
 		for j := 0; j < paramCount; j++ {
 			paramsType[j] = m.methodType.In(j) //获取参数的Type
-			parameterContent.WriteString("p")
-			parameterContent.WriteString(strconv.Itoa(j))
-			parameterContent.WriteString(":")
-			parameterContent.WriteString(m.methodType.In(j).String())
-			parameterContent.WriteString("\t")
+			parameterContent += fmt.Sprintf("%v, ", m.methodType.In(j).String())
 		}
-		log.Log.Info(parameterContent.String())
+		parameterContent = strings.Trim(parameterContent, ", ")
+		parameterContent += ")"
+		log.Log.Info(parameterContent)
 		m.paramsType = paramsType
 		//初始化方法的所有返回数据
 		returnCount := m.methodType.NumOut() //获取返回数据个数
