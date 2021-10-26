@@ -40,7 +40,8 @@ func (r *Request) AddParameter(parameter interface{}) error {
 
 // Result 服务执行结果
 type Result struct {
-	Binary [][]byte // 方法返回的数据
+	Binary   [][]byte  // 方法返回的数据
+	NodeINfo *NodeInfo //节点信息
 }
 
 func NewResult(vs []reflect.Value) (*Result, error) {

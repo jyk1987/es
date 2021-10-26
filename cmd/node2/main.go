@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/os/gfile"
 	"github.com/jyk1987/es"
 	"github.com/jyk1987/es/log"
@@ -16,9 +17,9 @@ func main() {
 		log.Log.Error(e)
 		return
 	}
-	go es.StartNode()
-	test()
-	//log.Log.Info("平均耗时：", end/time.Duration(count))
+	//go es.StartNode()
+	testGetInfo()
+	//test()
 }
 
 func testUpload() {
@@ -42,6 +43,14 @@ func testUpload() {
 	log.Log.Debug(r.GetData())
 }
 
+func testGetInfo() {
+	r, e := es.GetNodeInfo("node1")
+	if e != nil {
+		log.Log.Error(e)
+	}
+	log.Log.Debug(g.Export(r))
+}
+
 func test() {
 	args := make([]interface{}, 4)
 	args[0] = "你好"
@@ -53,7 +62,7 @@ func test() {
 	}
 	sd := &ServerDemo{Name: "李四"}
 	args[3] = sd
-	es.Call("node1", "main.ServerDemo", "Service1", args...)
+	es.Call("node1", "nana.ServerDemo", "Service1", args...)
 	begin := time.Now()
 	count := 10 //10000 * 10
 	var execCount int
@@ -67,7 +76,7 @@ func test() {
 				if execCount++; execCount > count {
 					break
 				}
-				result, e := es.Call("node1", "main.ServerDemo", "Service1", args...)
+				result, e := es.Call("node1", "nana.ServerDemo", "Service1", args...)
 				if e != nil {
 					log.Log.Debug(e)
 				}

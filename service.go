@@ -5,13 +5,12 @@ import (
 	"github.com/jyk1987/es/node"
 )
 
-var _IndexCache = make(map[string]*data.IndexInfo, 0)
-
 // Reg 注册本地服务
 func Reg(servicePath string, serviceInstance interface{}) {
 	node.Reg(servicePath, serviceInstance)
 }
 
+// Call 调用服务
 func Call(nodeName, path, method string, params ...interface{}) (*data.Result, error) {
 	r := &data.Request{
 		NodeName: nodeName,
@@ -25,6 +24,12 @@ func Call(nodeName, path, method string, params ...interface{}) (*data.Result, e
 	return callServiceExecute(nodeName, path, method, params...)
 }
 
+// GetNodeInfo 获取节点信息
+func GetNodeInfo(nodeName string) (*data.Result, error) {
+	return callServiceGetInfo(nodeName)
+}
+
+// InitES 初始化es
 func InitES() error {
 	e := node.InitESConfig()
 	if e != nil {

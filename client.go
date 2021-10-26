@@ -58,3 +58,18 @@ func callServiceExecute(nodeName, path, method string, params ...interface{}) (*
 	}
 	return result, nil
 }
+
+func callServiceGetInfo(nodeName string) (*data.Result, error) {
+	c, e := getRpcClient(nodeName)
+	if e != nil {
+		return nil, e
+	}
+	result := new(data.Result)
+	gmlock.RLock(nodeName)
+	defer gmlock.RUnlock(nodeName)
+	e = c.Call(context.Background(), node.RpcGetInfoFuncName, nil, result)
+	if e != nil {
+		return nil, e
+	}
+	return result, nil
+}

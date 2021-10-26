@@ -182,11 +182,20 @@ func getService(path string) *_Service {
 	return nil
 }
 
-// GetLocalServiceIndex 获取本地服务器的索引信息
-func GetLocalServiceIndex() map[string]*data.ServiceInfo {
+var nodeInfoCache *data.NodeInfo
+
+// GetLocalNodeInfo 获取本地节点信息
+func GetLocalNodeInfo() *data.NodeInfo {
+	if nodeInfoCache != nil {
+		return nodeInfoCache
+	}
+	nodeInfo := &data.NodeInfo{
+		NodeName:  GetNodeConfig().Name,
+		ESVersion: data.ESVersion,
+	}
 	_ServicesLock.Lock()
 	defer _ServicesLock.Unlock()
-	localIndex := make(map[string]*data.ServiceInfo, len(_Services))
+	services := make(map[string]*data.ServiceInfo, len(_Services))
 	for path, s := range _Services {
 		serviceInfo := &data.ServiceInfo{
 			Path:    path,
@@ -195,9 +204,7 @@ func GetLocalServiceIndex() map[string]*data.ServiceInfo {
 		for name, m := range s.methods {
 			methodInfo := &data.MethodInfo{
 				MethodName:  m.methodName,
-				ParamCount:  m.paramCount,
 				ParamsType:  make([]string, m.paramCount),
-				ReturnCount: m.returnCount,
 				ReturnsType: make([]string, m.returnCount),
 			}
 			for i := 0; i < m.paramCount; i++ {
@@ -208,7 +215,9 @@ func GetLocalServiceIndex() map[string]*data.ServiceInfo {
 			}
 			serviceInfo.Methods[name] = methodInfo
 		}
-		localIndex[path] = serviceInfo
+		services[path] = serviceInfo
 	}
-	return localIndex
+	nodeInfo.Services = services
+	nodeInfoCache = nodeInfo
+	return nodeInfo
 }

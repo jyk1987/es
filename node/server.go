@@ -34,8 +34,8 @@ func _ExecuteService(request *data.Request) (*data.Result, error) {
 // ESNode rpcx暴露的服务
 type ESNode int
 
-// RpcGetInfoName 获取节点信息
-const RpcGetInfoName = "GetInfo"
+// RpcGetInfoFuncName 获取节点信息
+const RpcGetInfoFuncName = "GetInfo"
 
 // RpcExecuteFuncName 执行服务
 const RpcExecuteFuncName = "Execute"
@@ -52,11 +52,7 @@ func (*ESNode) Execute(ctx context.Context, request *data.Request, result *data.
 
 // GetInfo 获取信息
 func (*ESNode) GetInfo(ctx context.Context, request *data.Request, result *data.Result) error {
-	r, err := _ExecuteService(request)
-	if err != nil {
-		return err
-	}
-	result.SetData(r.GetData())
+	result.NodeINfo = GetLocalNodeInfo()
 	return nil
 }
 
