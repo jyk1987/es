@@ -11,7 +11,7 @@ import (
 	"github.com/jyk1987/es/log"
 )
 
-const ESVersion = 54
+const ESVersion = 56
 const DefaultPort = 8910
 const ESConfigPath = "esconfig"
 const ESConfigFileName = "es.json"
