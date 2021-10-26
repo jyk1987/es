@@ -11,6 +11,7 @@ import (
 	"github.com/rpcxio/rpcx-etcd/serverplugin"
 	"github.com/smallnest/rpcx/server"
 	"log"
+	"os"
 	"time"
 )
 
@@ -66,6 +67,7 @@ func InitESConfig(configFile ...string) error {
 		return e
 	}
 	_Config = cfg
+	os.Setenv("ETCDCTL_API", "3")
 	return nil
 }
 
