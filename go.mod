@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/gogf/gf v1.16.6
+	github.com/json-iterator/go v1.1.10
 	github.com/modern-go/reflect2 v1.0.2
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
 	github.com/rpcxio/rpcx-etcd v0.0.0-20210907081219-a9e31da236e8
@@ -18,6 +19,7 @@ require (
 	github.com/edwingeng/doublejump v0.0.0-20210724020454-c82f1bcb3280 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
+	github.com/go-kit/kit v0.9.0
 	github.com/go-ping/ping v0.0.0-20211014180314-6e2b003bffdd // indirect
 	github.com/go-redis/redis/v8 v8.11.4 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -39,6 +41,7 @@ require (
 	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/rs/cors v1.8.0 // indirect
+	github.com/sirupsen/logrus v1.4.2
 	github.com/smallnest/quick v0.0.0-20210406061658-4bf95e372fbd // indirect
 	github.com/soheilhy/cmux v0.1.5 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect

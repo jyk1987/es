@@ -1,14 +1,22 @@
 package log
 
 import (
-	_ "github.com/gogf/gf"
-	"github.com/gogf/gf/os/glog"
+	"os"
+
+	"github.com/sirupsen/logrus"
 )
 
-var Log *glog.Logger
+var Log *logrus.Logger
 
 func init() {
-	Log = glog.New()
-	Log.SetStdoutPrint(true)
-	Log.SetFlags(glog.F_FILE_SHORT | glog.F_TIME_STD)
+	Log = logrus.New()
+	Log.SetOutput(os.Stderr)
+	Log.SetLevel(logrus.DebugLevel)
+	// Log.SetReportCaller(true)
+	Log.SetFormatter(&logrus.TextFormatter{
+		ForceColors:     true,
+		FullTimestamp:   true,
+		TimestampFormat: "2006-01-02 15:04:05.999",
+	})
+	// time.Now().Format()
 }

@@ -6,8 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/gogf/gf/encoding/gjson"
-	"github.com/gogf/gf/os/gfile"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/jyk1987/es/log"
 )
 
@@ -56,14 +55,15 @@ func GetConfig(configFile ...string) (*ESConfig, error) {
 		return c, nil
 	}
 	_ConfigsLock.RUnlock()
-	fullPath := gfile.Join(ESConfigPath, fileName)
-	json, err := gjson.Load(fullPath)
-	if err != nil {
-		return nil, err
+	fullPath := filepath.Join(ESConfigPath, fileName)
+	b, e := os.ReadFile(fullPath)
+	if e != nil {
+		return nil, e
 	}
-	err = json.Scan(config)
-	if err != nil {
-		return nil, err
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	e = json.Unmarshal(b, config)
+	if e != nil {
+		return nil, e
 	}
 	_ConfigsLock.Lock()
 	_Configs[fileName] = config
