@@ -11,7 +11,7 @@ import (
 	"sync"
 )
 
-const ESVersion = 56
+const ESVersion = 61
 const DefaultPort = 8910
 const ESConfigPath = "esconfig"
 const ESConfigFileName = "es.json"
