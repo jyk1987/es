@@ -2,6 +2,7 @@ package es
 
 import (
 	"github.com/jyk1987/es/data"
+	"github.com/jyk1987/es/log"
 	"github.com/jyk1987/es/node"
 )
 
@@ -44,5 +45,6 @@ func StartNode() {
 	if cfg == nil || cfg.Port == 0 {
 		return
 	}
+	log.Log.Info("Start ESNode")
 	node.StartNodeServer()
 }
