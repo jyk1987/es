@@ -9,13 +9,13 @@ type mlock struct {
 	locks map[string]*sync.RWMutex
 }
 
-func initMlock() {
+func initmlock() {
 	m = new(mlock)
 	m.locks = make(map[string]*sync.RWMutex)
 }
 
 func init() {
-	initMlock()
+	initmlock()
 }
 
 func getLock(key string) *sync.RWMutex {

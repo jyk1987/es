@@ -1,13 +1,14 @@
 package data
 
 import (
+	"fmt"
+	"github.com/jyk1987/es/log"
+
+	jsoniter "github.com/json-iterator/go"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
-
-	jsoniter "github.com/json-iterator/go"
-	"github.com/jyk1987/es/log"
 )
 
 const ESVersion = 56
@@ -25,8 +26,8 @@ type ESConfig struct {
 	Endpoint string `json:"endpoint"` //访问端点，如果配置，服务启动时会使用访问端点向etcd进行注册，其他服务会通过此访问端点来访问此服务
 }
 
-// GetCurrentDirectory 获取程序运行路径
-func GetCurrentDirectory() string {
+// GetAppPath 获取程序运行路径
+func GetAppPath() string {
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
 		log.Log.Panic("获取启动目录失败:", err)
@@ -34,8 +35,8 @@ func GetCurrentDirectory() string {
 	return strings.Replace(dir, "\\", "/", -1)
 }
 
-// GetRunDirectory 获取启动指令的执行目录
-func GetRunDirectory() string {
+// GetPwdPath 获取启动指令的执行目录
+func GetPwdPath() string {
 	path, _ := os.Getwd()
 	return path
 }
@@ -56,6 +57,10 @@ func GetConfig(configFile ...string) (*ESConfig, error) {
 	}
 	_ConfigsLock.RUnlock()
 	fullPath := filepath.Join(ESConfigPath, fileName)
+	fullPath, e := SearchFile(fullPath)
+	if e != nil {
+		return nil, e
+	}
 	b, e := os.ReadFile(fullPath)
 	if e != nil {
 		return nil, e
@@ -69,6 +74,26 @@ func GetConfig(configFile ...string) (*ESConfig, error) {
 	_Configs[fileName] = config
 	_ConfigsLock.Unlock()
 	return config, nil
+}
+
+func SearchFile(path string) (string, error) {
+	if filepath.IsAbs(path) {
+		return path, nil
+	}
+	fullPath := filepath.Join(GetAppPath(), path)
+	if FileExist(fullPath) {
+		return fullPath, nil
+	}
+	fullPath = filepath.Join(GetPwdPath(), path)
+	if FileExist(fullPath) {
+		return fullPath, nil
+	}
+	return "", fmt.Errorf("file %v not fount", path)
+}
+
+func FileExist(path string) bool {
+	_, err := os.Lstat(path)
+	return !os.IsNotExist(err)
 }
 
 const ESKeyFileExt = ".eskey"

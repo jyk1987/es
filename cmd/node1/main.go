@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/gogf/gf/os/gfile"
 	"github.com/jyk1987/es"
 	"github.com/jyk1987/es/log"
 	"time"
@@ -22,20 +21,6 @@ func (s *ServerDemo) Service1(a, b string, c []byte, sd *ServerDemo) (string, *S
 	fmt.Println(CallCount)
 	//println("input args:", a, b, c, sd)
 	return a + b, sd, []int{1, 2, 3}, nil
-}
-
-func (*ServerDemo) UploadFile(fileName string, data []byte) (string, error) {
-	f, e := gfile.Create(fileName)
-	if e != nil {
-		return "", e
-	}
-	_, e = f.Write(data)
-	if e != nil {
-		return "", e
-	}
-	log.Log.Debug(data)
-	f.Close()
-	return f.Name(), nil
 }
 
 func init() {

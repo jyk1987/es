@@ -1,11 +1,8 @@
 package main
 
 import (
-	"github.com/gogf/gf/frame/g"
-	"github.com/gogf/gf/os/gfile"
 	"github.com/jyk1987/es"
 	"github.com/jyk1987/es/log"
-	"io/ioutil"
 	"sync"
 	"time"
 )
@@ -22,33 +19,12 @@ func main() {
 	//test()
 }
 
-func testUpload() {
-	f, e := gfile.Open("README.md")
-	if e != nil {
-		log.Log.Error(e)
-		return
-	}
-	data, e := ioutil.ReadAll(f)
-	if e != nil {
-		log.Log.Error(e)
-		return
-	}
-	log.Log.Debug(len(data))
-	r, e := es.Call("node1", "main.ServerDemo", "UploadFile", "r.md", data)
-
-	if e != nil {
-		log.Log.Error(e)
-		return
-	}
-	log.Log.Debug(r.GetData())
-}
-
 func testGetInfo() {
 	r, e := es.GetNodeInfo("node1")
 	if e != nil {
 		log.Log.Error(e)
 	}
-	log.Log.Debug(g.Export(r))
+	log.Log.Debug(r)
 }
 
 func test() {

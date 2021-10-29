@@ -2,8 +2,8 @@ package es
 
 import (
 	"context"
-	"github.com/gogf/gf/os/gmlock"
-	"github.com/gogf/gf/util/guid"
+	"github.com/jyk1987/es/tool"
+
 	"github.com/jyk1987/es/data"
 	"github.com/jyk1987/es/log"
 	"github.com/jyk1987/es/node"
@@ -11,20 +11,18 @@ import (
 	"github.com/smallnest/rpcx/client"
 )
 
-var _UUID = guid.S()
-
 var _RpcClientCache = make(map[string]client.XClient)
 
 // getRpcClient 获取一个rpc客户端
 func getRpcClient(nodeName string) (client.XClient, error) {
-	gmlock.RLock(nodeName)
+	tool.RLock(nodeName)
 	c := _RpcClientCache[nodeName]
 	if c != nil {
-		gmlock.RUnlock(nodeName)
+		tool.RUnlock(nodeName)
 		return c, nil
 	}
-	gmlock.RUnlock(nodeName)
-	gmlock.Lock(nodeName)
+	tool.RUnlock(nodeName)
+	tool.Lock(nodeName)
 	etcurl := []string{node.GetNodeConfig().Etcd}
 	log.Log.Debug(etcurl)
 	d, e := etcd_client.NewEtcdV3Discovery(data.ETCDBasePath, nodeName, etcurl, false, nil)
@@ -34,7 +32,7 @@ func getRpcClient(nodeName string) (client.XClient, error) {
 	}
 	c = client.NewXClient(nodeName, client.Failover, client.RoundRobin, d, client.DefaultOption)
 	_RpcClientCache[nodeName] = c
-	gmlock.Unlock(nodeName)
+	tool.Unlock(nodeName)
 	return c, nil
 }
 
@@ -50,8 +48,8 @@ func callServiceExecute(nodeName, path, method string, params ...interface{}) (*
 	}
 	req.SetParameters(params...)
 	result := new(data.Result)
-	gmlock.RLock(nodeName)
-	defer gmlock.RUnlock(nodeName)
+	tool.RLock(nodeName)
+	defer tool.RUnlock(nodeName)
 	e = c.Call(context.Background(), node.RpcExecuteFuncName, req, result)
 	if e != nil {
 		return nil, e
@@ -65,8 +63,8 @@ func callServiceGetInfo(nodeName string) (*data.Result, error) {
 		return nil, e
 	}
 	result := new(data.Result)
-	gmlock.RLock(nodeName)
-	defer gmlock.RUnlock(nodeName)
+	tool.RLock(nodeName)
+	defer tool.RUnlock(nodeName)
 	e = c.Call(context.Background(), node.RpcGetInfoFuncName, nil, result)
 	if e != nil {
 		return nil, e

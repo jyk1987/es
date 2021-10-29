@@ -10,7 +10,7 @@ var Log *logrus.Logger
 
 func init() {
 	Log = logrus.New()
-	Log.SetOutput(os.Stderr)
+	Log.SetOutput(os.Stdout)
 	Log.SetLevel(logrus.DebugLevel)
 	// Log.SetReportCaller(true)
 	Log.SetFormatter(&logrus.TextFormatter{
