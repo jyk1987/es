@@ -23,9 +23,9 @@ func getRpcClient(nodeName string) (client.XClient, error) {
 	}
 	tool.RUnlock(nodeName)
 	tool.Lock(nodeName)
-	etcurl := []string{node.GetNodeConfig().Etcd}
-	log.Log.Debug(etcurl)
-	d, e := etcd_client.NewEtcdV3Discovery(data.ETCDBasePath, nodeName, etcurl, false, nil)
+	etcdServers := []string{node.GetNodeConfig().Etcd}
+	log.Log.Debug("etcd server:", etcdServers)
+	d, e := etcd_client.NewEtcdV3Discovery(data.ETCDBasePath, nodeName, etcdServers, false, nil)
 	if e != nil {
 		log.Log.Error(e)
 		return nil, e

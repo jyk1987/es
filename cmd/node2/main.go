@@ -8,15 +8,14 @@ import (
 )
 
 func main() {
-
 	e := es.InitES()
 	if e != nil {
 		log.Log.Error(e)
 		return
 	}
 	//go es.StartNode()
-	testGetInfo()
-	//test()
+	//testGetInfo()
+	test()
 }
 
 func testGetInfo() {
@@ -40,9 +39,9 @@ func test() {
 	args[3] = sd
 	es.Call("node1", "nana.ServerDemo", "Service1", args...)
 	begin := time.Now()
-	count := 10 //10000 * 10
+	count := 10000 * 100
 	var execCount int
-	tcount := 1
+	tcount := 1000
 	log.Log.Info("开始测试", count)
 	wg := sync.WaitGroup{}
 	for i := 0; i < tcount; i++ {
