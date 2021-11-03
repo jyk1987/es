@@ -31,8 +31,8 @@ func GetNodeInfo(nodeName string) (*data.Result, error) {
 }
 
 // InitES 初始化es
-func InitES() error {
-	e := node.InitESConfig()
+func InitES(configFile ...string) error {
+	e := node.InitESConfig(configFile...)
 	if e != nil {
 		return e
 	}

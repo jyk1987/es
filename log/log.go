@@ -27,10 +27,11 @@ func init() {
 			fs := strings.Split(f.Function, ".")
 			b := bytes.Buffer{}
 			b.WriteString(filename)
-			b.WriteString("->")
-			b.WriteString(fs[len(fs)-1])
 			b.WriteString(":")
 			b.WriteString(strconv.Itoa(f.Line))
+			b.WriteString("->")
+			b.WriteString(fs[len(fs)-1])
+			b.WriteString("():")
 			return "", b.String()
 		},
 	})

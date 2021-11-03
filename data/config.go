@@ -1,29 +1,33 @@
 package data
 
 import (
+	"errors"
 	"fmt"
+	"github.com/jinzhu/configor"
 	"github.com/jyk1987/es/log"
 
-	jsoniter "github.com/json-iterator/go"
+	_ "github.com/jinzhu/configor"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 )
 
-const ESVersion = 61
+const ESVersion = 63
 const DefaultPort = 8910
 const ESConfigPath = "esconfig"
-const ESConfigFileName = "es.json"
+
+var DefaultConfigs = []string{"es.yml", "es.json"}
+
 const ETCDBasePath = "/es_rpc"
 
 // ESConfig 配置文件映射结构
 type ESConfig struct {
-	Port     int    `json:"port"`     //服务端口,默认端口8910
-	Name     string `json:"name"`     //系统中的nodename用于区分不同服务
-	Key      string `json:"key"`      //链接密钥，用于链接到整个系统中
-	Etcd     string `json:"etcd"`     //发现服务地址
-	Endpoint string `json:"endpoint"` //访问端点，如果配置，服务启动时会使用访问端点向etcd进行注册，其他服务会通过此访问端点来访问此服务
+	Port     int    `default:"8910"` //服务端口,默认端口8910
+	Name     string //系统中的nodename用于区分不同服务
+	Key      string //链接密钥，用于链接到整个系统中
+	Etcd     string //发现服务地址
+	Endpoint string //访问端点，如果配置，服务启动时会使用访问端点向etcd进行注册，其他服务会通过此访问端点来访问此服务
 }
 
 // GetAppPath 获取程序运行路径
@@ -46,9 +50,11 @@ var _ConfigsLock sync.RWMutex
 
 func GetConfig(configFile ...string) (*ESConfig, error) {
 	config := &ESConfig{Port: DefaultPort}
-	fileName := ESConfigFileName
+	configNames := make([]string, 0)
+	var fileName string
 	if len(configFile) > 0 {
 		fileName = configFile[0]
+		configNames = append(configNames, configFile[0])
 	}
 	_ConfigsLock.RLock()
 	if c := _Configs[fileName]; c != nil {
@@ -56,20 +62,32 @@ func GetConfig(configFile ...string) (*ESConfig, error) {
 		return c, nil
 	}
 	_ConfigsLock.RUnlock()
-	fullPath := filepath.Join(ESConfigPath, fileName)
-	fullPath, e := SearchFile(fullPath)
-	if e != nil {
-		return nil, e
+	for i := 0; i < len(DefaultConfigs); i++ {
+		configNames = append(configNames, DefaultConfigs[i])
 	}
-	b, e := os.ReadFile(fullPath)
-	if e != nil {
-		return nil, e
+	log.Log.Debug(configNames)
+	var fullPath string
+	for _, name := range configNames {
+		fullPath, _ = SearchFile(filepath.Join(ESConfigPath, name))
+		if len(fullPath) > 0 {
+			break
+		}
 	}
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	e = json.Unmarshal(b, config)
-	if e != nil {
-		return nil, e
+	if len(fullPath) == 0 {
+		return nil, errors.New("config file not fount")
 	}
+
+	log.Log.Infof("load config file:%v", fullPath)
+	err := configor.Load(config, fullPath)
+	if err != nil {
+		return nil, err
+	}
+	log.Log.Debug(config)
+	//json := jsoniter.ConfigCompatibleWithStandardLibrary
+	//e = json.Unmarshal(b, config)
+	//if e != nil {
+	//	return nil, e
+	//}
 	_ConfigsLock.Lock()
 	_Configs[fileName] = config
 	_ConfigsLock.Unlock()
