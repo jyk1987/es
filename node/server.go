@@ -88,7 +88,7 @@ func addRegistryPlugin(s *server.Server) error {
 	cfg := GetNodeConfig()
 	var endpoint string
 	if len(cfg.Endpoint) > 0 {
-		endpoint = cfg.Endpoint
+		endpoint = fmt.Sprintf("tcp@%v", cfg.Endpoint)
 	} else {
 		local, _ := tool.GetOutBoundIP()
 		endpoint = fmt.Sprintf("tcp@%v:%v", local, GetNodeConfig().Port)
