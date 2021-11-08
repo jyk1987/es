@@ -1,6 +1,7 @@
 package es
 
 import (
+	"errors"
 	"github.com/jyk1987/es/data"
 	"github.com/jyk1987/es/log"
 	"github.com/jyk1987/es/node"
@@ -13,6 +14,9 @@ func Reg(servicePath string, serviceInstance interface{}) {
 
 // Call 调用服务
 func Call(nodeName, path, method string, params ...interface{}) (*data.Result, error) {
+	if node.GetNodeConfig() == nil {
+		return nil, errors.New("conf not found")
+	}
 	r := &data.Request{
 		NodeName: nodeName,
 		Path:     path,
@@ -27,6 +31,9 @@ func Call(nodeName, path, method string, params ...interface{}) (*data.Result, e
 
 // GetNodeInfo 获取节点信息
 func GetNodeInfo(nodeName string) (*data.Result, error) {
+	if node.GetNodeConfig() == nil {
+		return nil, errors.New("conf not found")
+	}
 	return callServiceGetInfo(nodeName)
 }
 
