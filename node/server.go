@@ -6,11 +6,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/jyk1987/es/data"
+	"github.com/jyk1987/es/log"
 	"github.com/jyk1987/es/tool"
 	"github.com/rcrowley/go-metrics"
 	"github.com/rpcxio/rpcx-etcd/serverplugin"
 	"github.com/smallnest/rpcx/server"
-	"log"
 	"os"
 	"time"
 )
@@ -72,15 +72,19 @@ func StartNodeServer() {
 	s := server.NewServer()
 	e := addRegistryPlugin(s)
 	if e != nil {
-		log.Panic(e)
+		log.Log.Panic(e)
 	}
 	e = s.RegisterName(cfg.Name, new(ESNode), "")
 	if e != nil {
-		log.Panic(e)
+		log.Log.Panic(e)
 	}
-	e = s.Serve("tcp", fmt.Sprintf("0.0.0.0:%v", cfg.Port))
-	if e != nil {
-		log.Panic(e)
+	for {
+		e = s.Serve("tcp", fmt.Sprintf("0.0.0.0:%v", cfg.Port))
+		if e != nil {
+			log.Log.Error("ESNode start fail:", e)
+		}
+		log.Log.Infof("wait 30 seconds reconnecting.")
+		time.Sleep(time.Second * 30)
 	}
 }
 

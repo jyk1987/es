@@ -13,7 +13,7 @@ import (
 	"sync"
 )
 
-const ESVersion = 64
+const ESVersion = 65
 const DefaultPort = 8910
 const ESConfigPath = "esconfig"
 
