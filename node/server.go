@@ -79,6 +79,7 @@ func StartNodeServer() {
 		log.Log.Panic(e)
 	}
 	for {
+		log.Log.Info("ESNode starting...")
 		e = s.Serve("tcp", fmt.Sprintf("0.0.0.0:%v", cfg.Port))
 		if e != nil {
 			log.Log.Error("ESNode start fail:", e)
