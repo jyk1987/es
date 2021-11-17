@@ -72,11 +72,13 @@ func StartNodeServer() {
 	s := server.NewServer()
 	e := addRegistryPlugin(s)
 	if e != nil {
-		log.Log.Panic(e)
+		log.Log.Errorf("Etcd Register error:%v", e.Error())
+		return
 	}
 	e = s.RegisterName(cfg.Name, new(ESNode), "")
 	if e != nil {
-		log.Log.Panic(e)
+		log.Log.Errorf("ESNode Register error:%v", e.Error())
+		return
 	}
 	for {
 		log.Log.Info("ESNode starting...")
@@ -105,9 +107,12 @@ func addRegistryPlugin(s *server.Server) error {
 		Metrics:        metrics.NewRegistry(),
 		UpdateInterval: time.Second,
 	}
+CONNETCD:
 	err := r.Start()
 	if err != nil {
-		return err
+		log.Log.Errorf("etcd:%v:%v", endpoint, err.Error())
+		time.Sleep(time.Second * 5)
+		goto CONNETCD
 	}
 	s.Plugins.Add(r)
 	return nil
