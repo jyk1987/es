@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/jyk1987/es"
 	"github.com/jyk1987/es/log"
 	"time"
@@ -18,7 +17,7 @@ var CallCount int
 func (s *ServerDemo) Service1(a, b string, c []byte, sd *ServerDemo) (string, *ServerDemo, []int, error) {
 	sd.Value = &ServerDemo{Name: sd.Name + "儿子"}
 	CallCount++
-	fmt.Println(CallCount)
+	//fmt.Println(CallCount)
 	//println("input args:", a, b, c, sd)
 	return a + b, sd, []int{1, 2, 3}, nil
 }
