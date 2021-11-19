@@ -3,10 +3,8 @@ module github.com/jyk1987/es
 go 1.16
 
 require (
-	github.com/json-iterator/go v1.1.10
 	github.com/modern-go/reflect2 v1.0.2
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
-	github.com/rpcxio/rpcx-etcd v0.0.0-20210907081219-a9e31da236e8
 	github.com/smallnest/rpcx v1.6.11
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 )
@@ -40,7 +38,7 @@ require (
 	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/rs/cors v1.8.0 // indirect
-	github.com/sirupsen/logrus v1.4.2
+	github.com/sirupsen/logrus v1.8.1
 	github.com/smallnest/quick v0.0.0-20210406061658-4bf95e372fbd // indirect
 	github.com/soheilhy/cmux v0.1.5 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect

@@ -27,6 +27,7 @@ type ESConfig struct {
 	Name     string //系统中的nodename用于区分不同服务
 	Key      string //链接密钥，用于链接到整个系统中
 	Etcd     string //发现服务地址
+	Consul   string //consul发现服务
 	Endpoint string //访问端点，如果配置，服务启动时会使用访问端点向etcd进行注册，其他服务会通过此访问端点来访问此服务
 }
 

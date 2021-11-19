@@ -1,6 +1,0 @@
-{
-  "name": "node2",
-  "port": 8912,
-  "key": "node2_key_content",
-  "etcd": "localhost:2379"
-}

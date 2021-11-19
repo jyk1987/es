@@ -9,8 +9,8 @@ import (
 	"github.com/jyk1987/es/log"
 	"github.com/jyk1987/es/tool"
 	"github.com/rcrowley/go-metrics"
-	"github.com/rpcxio/rpcx-etcd/serverplugin"
 	"github.com/smallnest/rpcx/server"
+	"github.com/smallnest/rpcx/serverplugin"
 	"os"
 	"time"
 )
@@ -100,12 +100,12 @@ func addRegistryPlugin(s *server.Server) error {
 		local, _ := tool.GetOutBoundIP()
 		endpoint = fmt.Sprintf("tcp@%v:%v", local, GetNodeConfig().Port)
 	}
-	r := &serverplugin.EtcdV3RegisterPlugin{
+	r := &serverplugin.ConsulRegisterPlugin{
 		ServiceAddress: endpoint,
-		EtcdServers:    []string{GetNodeConfig().Etcd},
+		ConsulServers:  []string{GetNodeConfig().Consul},
 		BasePath:       data.ETCDBasePath,
 		Metrics:        metrics.NewRegistry(),
-		UpdateInterval: time.Second,
+		UpdateInterval: time.Second * 10,
 	}
 CONNETCD:
 	err := r.Start()

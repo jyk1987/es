@@ -1,0 +1,5 @@
+name: node2
+port: 8912
+key: node1_key_content
+consul: 192.168.1.13:31533
+#endpoint: 192.168.1.201:8911

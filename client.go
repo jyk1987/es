@@ -7,7 +7,6 @@ import (
 	"github.com/jyk1987/es/data"
 	"github.com/jyk1987/es/log"
 	"github.com/jyk1987/es/node"
-	etcd_client "github.com/rpcxio/rpcx-etcd/client"
 	"github.com/smallnest/rpcx/client"
 )
 
@@ -23,9 +22,9 @@ func getRpcClient(nodeName string) (client.XClient, error) {
 	}
 	tool.RUnlock(nodeName)
 	tool.Lock(nodeName)
-	etcdServers := []string{node.GetNodeConfig().Etcd}
-	log.Log.Debug("etcd server:", etcdServers)
-	d, e := etcd_client.NewEtcdV3Discovery(data.ETCDBasePath, nodeName, etcdServers, false, nil)
+	consulServers := []string{node.GetNodeConfig().Consul}
+	log.Log.Debug("consul server:", consulServers)
+	d, e := client.NewConsulDiscovery(data.ETCDBasePath, nodeName, consulServers, nil)
 	if e != nil {
 		log.Log.Error(e)
 		return nil, e
