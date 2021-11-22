@@ -12,6 +12,7 @@ import (
 	"github.com/smallnest/rpcx/server"
 	"github.com/smallnest/rpcx/serverplugin"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -100,9 +101,13 @@ func addRegistryPlugin(s *server.Server) error {
 		local, _ := tool.GetOutBoundIP()
 		endpoint = fmt.Sprintf("tcp@%v:%v", local, GetNodeConfig().Port)
 	}
+	consul := GetNodeConfig().Consul
+	if len(consul) == 0 || len(strings.Split(consul, ":")) != 2 {
+		return fmt.Errorf("consul address format error:%v", consul)
+	}
 	r := &serverplugin.ConsulRegisterPlugin{
 		ServiceAddress: endpoint,
-		ConsulServers:  []string{GetNodeConfig().Consul},
+		ConsulServers:  []string{consul},
 		BasePath:       data.ETCDBasePath,
 		Metrics:        metrics.NewRegistry(),
 		UpdateInterval: time.Second * 10,
@@ -110,10 +115,11 @@ func addRegistryPlugin(s *server.Server) error {
 CONNETCD:
 	err := r.Start()
 	if err != nil {
-		log.Log.Errorf("Consul connect error:%v:%v", endpoint, err.Error())
+		log.Log.Errorf("Consul connect error:%v:%v", consul, err.Error())
 		time.Sleep(time.Second * 5)
 		goto CONNETCD
 	}
+	log.Log.Infof("Consul %v connected.", consul)
 	s.Plugins.Add(r)
 	return nil
 }
