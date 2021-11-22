@@ -110,7 +110,7 @@ func addRegistryPlugin(s *server.Server) error {
 CONNETCD:
 	err := r.Start()
 	if err != nil {
-		log.Log.Errorf("etcd:%v:%v", endpoint, err.Error())
+		log.Log.Errorf("Consul connect error:%v:%v", endpoint, err.Error())
 		time.Sleep(time.Second * 5)
 		goto CONNETCD
 	}
