@@ -110,13 +110,13 @@ func addRegistryPlugin(s *server.Server) error {
 		ConsulServers:  []string{consul},
 		BasePath:       data.ETCDBasePath,
 		Metrics:        metrics.NewRegistry(),
-		UpdateInterval: time.Second * 10,
+		UpdateInterval: time.Second * 11,
 	}
 BEGINCONNECT:
 	err := r.Start()
 	if err != nil {
 		log.Log.Errorf("Consul connect error:%v:%v", consul, err.Error())
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 11)
 		goto BEGINCONNECT
 	}
 	log.Log.Infof("Consul %v connected.", consul)
