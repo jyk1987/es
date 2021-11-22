@@ -112,12 +112,12 @@ func addRegistryPlugin(s *server.Server) error {
 		Metrics:        metrics.NewRegistry(),
 		UpdateInterval: time.Second * 10,
 	}
-CONNETCD:
+BEGINCONNECT:
 	err := r.Start()
 	if err != nil {
 		log.Log.Errorf("Consul connect error:%v:%v", consul, err.Error())
 		time.Sleep(time.Second * 5)
-		goto CONNETCD
+		goto BEGINCONNECT
 	}
 	log.Log.Infof("Consul %v connected.", consul)
 	s.Plugins.Add(r)

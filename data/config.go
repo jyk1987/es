@@ -26,8 +26,7 @@ type ESConfig struct {
 	Port     int    `default:"8910"` //服务端口,默认端口8910
 	Name     string //系统中的nodename用于区分不同服务
 	Key      string //链接密钥，用于链接到整个系统中
-	Etcd     string //发现服务地址
-	Consul   string //consul发现服务
+	Consul   string `required:"true"` //consul发现服务
 	Endpoint string //访问端点，如果配置，服务启动时会使用访问端点向etcd进行注册，其他服务会通过此访问端点来访问此服务
 }
 
@@ -35,7 +34,7 @@ type ESConfig struct {
 func GetAppPath() string {
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
-		log.Log.Panic("获取启动目录失败:", err)
+		log.Log.Panic("esconfig:", "get startup path error:", err)
 	}
 	return strings.Replace(dir, "\\", "/", -1)
 }
@@ -50,7 +49,7 @@ var _Configs = make(map[string]*ESConfig)
 var _ConfigsLock sync.RWMutex
 
 func GetConfig(configFile ...string) (*ESConfig, error) {
-	config := &ESConfig{Port: DefaultPort}
+	config := &ESConfig{}
 	configNames := make([]string, 0)
 	var fileName string
 	if len(configFile) > 0 {
@@ -81,7 +80,7 @@ func GetConfig(configFile ...string) (*ESConfig, error) {
 	log.Log.Infof("load config file:%v", fullPath)
 	err := configor.Load(config, fullPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("esconfig:%v", err)
 	}
 	log.Log.Debug(config)
 	//json := jsoniter.ConfigCompatibleWithStandardLibrary
@@ -107,7 +106,7 @@ func SearchFile(path string) (string, error) {
 	if FileExist(fullPath) {
 		return fullPath, nil
 	}
-	return "", fmt.Errorf("file %v not fount", path)
+	return "", fmt.Errorf("esconfig:file %v not fount", path)
 }
 
 func FileExist(path string) bool {
