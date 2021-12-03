@@ -24,7 +24,7 @@ func getRpcClient(nodeName string) (client.XClient, error) {
 	tool.Lock(nodeName)
 	consulServers := []string{node.GetNodeConfig().Consul}
 	log.Log.Debug("consul server:", consulServers)
-	d, e := client.NewConsulDiscovery(data.ETCDBasePath, nodeName, consulServers, nil)
+	d, e := client.NewConsulDiscovery(data.DiscoverBasePath, nodeName, consulServers, nil)
 	if e != nil {
 		log.Log.Error(e)
 		return nil, e

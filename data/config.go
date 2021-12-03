@@ -13,13 +13,13 @@ import (
 	"sync"
 )
 
-const ESVersion = 76
+const ESVersion = 77
 const DefaultPort = 8910
 const ESConfigPath = "esconfig"
 
 var DefaultConfigs = []string{"es.yml", "es.json"}
 
-const ETCDBasePath = "/es_rpc"
+const DiscoverBasePath = "/es_rpc"
 
 // ESConfig 配置文件映射结构
 type ESConfig struct {

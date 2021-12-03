@@ -108,7 +108,7 @@ func addRegistryPlugin(s *server.Server) error {
 	r := &serverplugin.ConsulRegisterPlugin{
 		ServiceAddress: endpoint,
 		ConsulServers:  []string{consul},
-		BasePath:       data.ETCDBasePath,
+		BasePath:       data.DiscoverBasePath,
 		Metrics:        metrics.NewRegistry(),
 		UpdateInterval: time.Second * 11,
 	}
