@@ -20,16 +20,18 @@ func init() {
 
 func getLock(key string) *sync.RWMutex {
 	m.lock.RLock()
-	if lock := m.locks[key]; lock != nil {
+	lock, ok := m.locks[key]
+	m.lock.RUnlock()
+	if ok {
 		return lock
 	}
-	m.lock.RUnlock()
 	m.lock.Lock()
-	if lock := m.locks[key]; lock != nil {
+	defer m.lock.Unlock()
+	lock, ok = m.locks[key]
+	if ok {
 		return lock
 	}
 	m.locks[key] = new(sync.RWMutex)
-	m.lock.Unlock()
 	return m.locks[key]
 }
 
