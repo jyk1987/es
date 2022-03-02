@@ -3,17 +3,19 @@ package data
 import (
 	"errors"
 	"fmt"
+
 	"github.com/jinzhu/configor"
 	"github.com/jyk1987/es/log"
 
-	_ "github.com/jinzhu/configor"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	_ "github.com/jinzhu/configor"
 )
 
-const ESVersion = 77
+const ESVersion = 79
 const DefaultPort = 8910
 const ESConfigPath = "esconfig"
 
